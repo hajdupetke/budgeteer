@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:latest
+    container_name: budgeteer_db
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: budgeteer
+    volumes:
+      - budgeteer-data:/var/lib/postgresql/data
+    restart: unless-stopped
+volumes:
+  budgeteer-data:
