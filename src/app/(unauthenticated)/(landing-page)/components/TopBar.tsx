@@ -14,16 +14,10 @@ const TopBar = () => {
       />
       <div className="md:absolute flex gap-2 right-4">
         <Link
-          className={buttonVariants({ variant: 'outline' }) + ' !rounded-full'}
-          href={'/'}
-        >
-          Login
-        </Link>
-        <Link
           className={buttonVariants({ variant: 'default' }) + ' !rounded-full'}
-          href={'/'}
+          href={'/sign-in'}
         >
-          Sign Up
+          Sign In
         </Link>
       </div>
     </div>
