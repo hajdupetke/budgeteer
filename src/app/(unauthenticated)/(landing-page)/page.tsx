@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { buttonVariants } from '@/components/ui/button';
 import Image from 'next/image';
-import TopBar from './components/TopBar';
-import Footer from './components/Footer';
+import TopBar from './_components/TopBar';
+import Footer from './_components/Footer';
 
 export default function Home() {
   return (

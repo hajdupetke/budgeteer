@@ -22,6 +22,13 @@ const config: Config = {
         'hero-pattern': "url('/public/static/images/background.svg')",
       },
     },
+    colors: {
+      text: '#05022c',
+      backgroundColor: '#f0effa',
+      primary: '#2f27ce',
+      secondary: '#e7e6ef',
+      accent: '#65009c',
+    },
   },
   plugins: [require('tailwindcss-animate')],
 };
