@@ -6,7 +6,7 @@ const Profile = async () => {
   const session = await auth();
 
   return (
-    <div className="flex items-center gap-4 my-4">
+    <div className="flex items-center justify-evenly my-8">
       {session?.user?.image ? (
         <img
           src={session?.user?.image as string}

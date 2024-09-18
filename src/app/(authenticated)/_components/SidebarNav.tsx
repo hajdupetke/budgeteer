@@ -10,6 +10,7 @@ const SidebarNav = () => {
         width={176}
         height={45}
         alt="logo"
+        priority
         draggable="false"
         className="mb-4"
       />

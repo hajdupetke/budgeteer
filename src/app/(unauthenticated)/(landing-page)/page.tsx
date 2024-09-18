@@ -19,10 +19,9 @@ export default function Home() {
 
         <Link
           href={'/sign-in'}
-          className={
-            buttonVariants({ variant: 'default', size: 'xl' }) +
-            ' !rounded-full'
-          }
+          className={`
+            ${buttonVariants({ variant: 'default', size: 'xl' })} +
+             !rounded-full border`}
         >
           Sign up for free
         </Link>
@@ -84,10 +83,7 @@ export default function Home() {
         </div>
         <Link
           href={'/sign-in'}
-          className={
-            buttonVariants({ variant: 'default', size: 'xl' }) +
-            ' !rounded-full'
-          }
+          className={buttonVariants({ size: 'xl' }) + ' !rounded-full border'}
         >
           Get started today!
         </Link>
