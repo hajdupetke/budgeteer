@@ -14,7 +14,7 @@ const Profile = async () => {
           className="h-8 w-8 rounded-full border"
         />
       ) : (
-        <CircleUserIcon fill="#65009c" />
+        <CircleUserIcon stroke="#65009c" />
       )}
       <span className="font-bold">{session?.user?.name}</span>
     </div>
