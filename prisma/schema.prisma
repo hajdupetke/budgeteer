@@ -111,7 +111,6 @@ model Settings {
 
 model ExchangeRate {
   id           Int @id @default(autoincrement())
-  from         Currency
-  to           Currency
+  currency     Currency
   exchangeRate Decimal
 }
