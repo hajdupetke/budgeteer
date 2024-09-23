@@ -14,6 +14,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Currency {
+  HUF 
+  USD
+  EUR
+}
+
 // Schema for authentication
 
 model User {
@@ -24,6 +30,9 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  transactionCategories TransactionCategory[]
+  transactions  Transaction[]
+  settings      Settings?
  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -68,3 +77,41 @@ model VerificationToken {
   @@id([identifier, token])
 }
  
+model TransactionCategory {
+  id         Int @id @default(autoincrement())
+  userId     String
+  user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  transactions Transaction[]
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Transaction {
+  id         Int @id @default(autoincrement())
+  userId     String
+  user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  amount     Decimal
+  timestamp  DateTime
+  categoryId Int
+  category   TransactionCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Settings {
+  id         Int @id @default(autoincrement())
+  userId     String @unique
+  user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currency   Currency @default(EUR)
+}
+
+model ExchangeRate {
+  id           Int @id @default(autoincrement())
+  from         Currency
+  to           Currency
+  exchangeRate Decimal
+}
