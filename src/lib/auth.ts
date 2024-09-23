@@ -22,4 +22,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
     signIn: '/sign-in',
   },
+  callbacks: {
+    async signIn({ user, account, profile, email, credentials }) {
+      console.log('user signed in!');
+
+      // check if user has settings entry, if not create it
+
+      return true;
+    },
+  },
 });
