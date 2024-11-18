@@ -20,7 +20,8 @@ const links = [
 ];
 
 const NavLinks = () => {
-  const pathname = usePathname();
+  const pathname = '/' + usePathname().split('/')[1];
+
   return (
     <div className="flex flex-col gap-6">
       {links.map((link) => {

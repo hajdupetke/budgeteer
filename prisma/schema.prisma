@@ -79,9 +79,10 @@ model VerificationToken {
  
 model TransactionCategory {
   id         Int @id @default(autoincrement())
-  userId     String
-  user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String?
+  user       User? @relation(fields: [userId], references: [id], onDelete: Cascade)
   name       String
+  icon       String
   transactions Transaction[]
 
   createdAt  DateTime @default(now())
@@ -90,7 +91,7 @@ model TransactionCategory {
 
 model Transaction {
   id         Int @id @default(autoincrement())
-  userId     String
+  userId     String 
   user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
   name       String
   amount     Decimal

@@ -25,15 +25,12 @@ export default async function AuthenticatedLayout({
   }
 
   return (
-    <html
-      lang="en"
-      className={`bg-backgroundColor text-text ${inter.className}`}
-    >
-      <body className="flex items-center h-screen w-screen overflow-hidden">
+    <html lang="en" className={`text-text ${inter.className}`}>
+      <body className="flex items-center h-screen w-screen overflow-hidden bg-backgroundColor">
         <AnimatedSidebar>
           <SidebarNav />
         </AnimatedSidebar>
-        <div className="w-full h-full p-4 overflow-scroll">{children}</div>
+        <div className="w-full h-full p-8 overflow-scroll">{children}</div>
       </body>
     </html>
   );

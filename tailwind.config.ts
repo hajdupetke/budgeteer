@@ -12,6 +12,11 @@ const config: Config = {
       colors: {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
+        text: '#05022c',
+        backgroundColor: '#f0effa',
+        primary: '#2f27ce',
+        secondary: '#e7e6ef',
+        accent: '#65009c',
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -21,13 +26,9 @@ const config: Config = {
       backgroundImage: {
         'hero-pattern': "url('/public/static/images/background.svg')",
       },
-    },
-    colors: {
-      text: '#05022c',
-      backgroundColor: '#f0effa',
-      primary: '#2f27ce',
-      secondary: '#e7e6ef',
-      accent: '#65009c',
+      boxShadow: {
+        around: '0px 0px 10px 0px rgba(0,0,0,0.2)',
+      },
     },
   },
   plugins: [require('tailwindcss-animate')],

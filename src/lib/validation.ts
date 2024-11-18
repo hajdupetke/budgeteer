@@ -1,0 +1,14 @@
+import { z } from 'zod';
+
+/* TransactionCategory Schema */
+
+export const TransactionCategorySchema = z.object({
+  id: z.number().optional(),
+  icon: z
+    .string({ message: 'An emoji is required' })
+    .min(1, 'An emoji is required'),
+  name: z
+    .string({ message: 'Category name is required!' })
+    .min(3, 'Category name must be at least 3 characters')
+    .max(50, 'Category name must not exceed 50 characters'),
+});
