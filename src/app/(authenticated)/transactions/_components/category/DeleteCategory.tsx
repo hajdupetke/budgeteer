@@ -12,7 +12,7 @@ const DeleteCategory = ({
 }) => {
   return (
     <div
-      className="bg-[rgba(0,0,0,0.3)] w-screen h-screen absolute top-0 left-0 z-50 flex items-center justify-center"
+      className="bg-gray-200/30 w-screen h-screen absolute backdrop-blur-sm top-0 left-0 z-50 flex items-center justify-center"
       onClick={(e) => {
         if ((e.target as Element).id == 'overlay') {
           setOpen(false);
@@ -21,28 +21,29 @@ const DeleteCategory = ({
       id="overlay"
     >
       <div
-        className="w-1/3 bg-white p-4 relative border border-red-500"
+        className="w-3/4 md:w-1/2 lg:w-1/3 p-4 border-2 border-warning-800 bg-warning-50 relative rounded-xl drop-shadow-xl"
         id="popup-window"
       >
-        <h3 className="text-2xl font-medium">Delete category</h3>
+        <h3 className="text-2xl font-semibold text-red-900">Delete category</h3>
         <X
-          className="absolute right-4 top-4 cursor-pointer"
+          className="absolute right-4 top-4 cursor-pointer transition-colors stroke-red-900 hover:stroke-red-500"
           onClick={() => setOpen(false)}
         />
 
-        <p className="my-4">Are you sure you want to delete this category?</p>
-        <p>
+        <p className="my-4 text-red-800">Are you sure you want to delete this category?</p>
+        <p className='text-red-800'>
           This action cannot be undone, all transactions with this category,
           will now have no category.
         </p>
-        <div className="flex gap-2 mt-4">
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
+        <div className="flex gap-1 mt-4 justify-end">
+          <Button onClick={() => setOpen(false)} className='!bg-transparent !shadow-none text-gray-600 font-bold hover:text-gray-900'>Cancel</Button>
           <Button
             variant="destructive"
             onClick={async () => {
               const res = await deleteTransactionCategory(category.id);
               if (res.success) setOpen(false);
             }}
+            className='!bg-warning-600 font-bold hover:!bg-warning-800'
           >
             Delete
           </Button>

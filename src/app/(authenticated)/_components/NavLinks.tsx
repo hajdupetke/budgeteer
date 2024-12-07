@@ -27,38 +27,38 @@ const NavLinks = () => {
       {links.map((link) => {
         const Icon = link.icon;
         return (
-          <Link
-            href={link.href}
-            key={link.name}
-            className={clsx(
-              'flex gap-4 items-center py-2 w-full rounded-full px-4',
-              {
-                'bg-[#d9d8e6]': pathname === link.href,
-              }
-            )}
-          >
-            <Icon
-              width={30}
-              height={30}
-              stroke="#65009c"
-              className={clsx({ 'opacity-60': pathname !== link.href })}
-            />{' '}
-            {link.name}
-          </Link>
+          <div className='group' key={link.name}>
+            <Link
+              href={link.href}
+              className={clsx(
+                'flex gap-4 items-center w-full px-2 font-bold border-l-2 border-transparent group-hover:text-primary-600 transition-colors',
+                {
+                  'text-primary-600 !border-primary-600': pathname === link.href,
+                }
+              )}
+            >
+              <Icon
+                width={30}
+                height={30}
+                className={clsx('stroke-gray-500 group-hover:stroke-primary-600', { '!stroke-primary-600': pathname === link.href })}
+              />{' '}
+              {link.name}
+            </Link>
+          </div>
+
         );
       })}
       <form action={logOut}>
         <button
           type="submit"
-          className="flex gap-4 items-center py-2 px-4 w-full"
+          className="flex gap-4 items-center px-2 w-full font-bold group"
         >
           <LogOut
             width={30}
             height={30}
-            stroke="#65009c"
-            className="opacity-60"
+            className="stroke-gray-500 group-hover:stroke-primary-600 border-l-2 border-transparent"
           />{' '}
-          Sign out
+          <span className='group-hover:text-primary-600 transition-colors '>Sign out</span>
         </button>
       </form>
     </div>

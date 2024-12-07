@@ -2,11 +2,11 @@ import '@/styles/globals.css';
 import { Metadata } from 'next';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { Inter } from 'next/font/google';
+import { Nunito_Sans } from 'next/font/google';
 import SidebarNav from './_components/SidebarNav';
 import AnimatedSidebar from './_components/AnimatedSidebar';
 
-const inter = Inter({ subsets: ['latin'] });
+const nunitoSans = Nunito_Sans({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: { template: '%s - Budgeteer', default: 'Budgeteer' },
@@ -25,12 +25,12 @@ export default async function AuthenticatedLayout({
   }
 
   return (
-    <html lang="en" className={`text-text ${inter.className}`}>
-      <body className="flex items-center h-screen w-screen overflow-hidden bg-backgroundColor">
+    <html lang="en" className={`text-gray-800 ${nunitoSans.className}`}>
+      <body className="flex items-center h-screen w-screen overflow-hidden bg-white">
         <AnimatedSidebar>
           <SidebarNav />
         </AnimatedSidebar>
-        <div className="w-full h-full p-8 overflow-scroll">{children}</div>
+        <div className="w-full h-full p-4">{children}</div>
       </body>
     </html>
   );

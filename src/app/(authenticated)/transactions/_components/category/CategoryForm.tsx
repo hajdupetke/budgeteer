@@ -83,7 +83,7 @@ export default function CategoryForm({
           name="icon"
           render={({ field }) => (
             <FormItem className="my-4">
-              <FormLabel className="text-lg my-2">Category Icon</FormLabel>
+              <FormLabel className="text-md text-gray-800 font-semibold my-2">Category Icon</FormLabel>
               <FormControl>
                 <div className="relative">
                   <Button
@@ -123,7 +123,7 @@ export default function CategoryForm({
           name="name"
           render={({ field }) => (
             <FormItem className="my-4">
-              <FormLabel className="text-lg my-2">Category Name</FormLabel>
+              <FormLabel className="text-md text-gray-800 font-semibold my-2">Category Name</FormLabel>
               <FormControl>
                 <Input
                   placeholder="Enter category name"
@@ -139,7 +139,7 @@ export default function CategoryForm({
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded text-lg py-6"
+          className="w-full rounded text-lg py-6 bg-primary-600 hover:bg-primary-700 box-shadow-md shadow-gray-600"
         >
           {isSubmitting
             ? 'Saving...'
