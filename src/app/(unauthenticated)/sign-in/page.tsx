@@ -2,13 +2,13 @@ import Image from 'next/image';
 import LoginForm from './components/LoginForm';
 import LoginError from './components/LoginError';
 
-export default function SignInPage({
-  params,
-  searchParams,
-}: {
-  params: { slug: string };
-  searchParams?: { [key: string]: string | undefined };
-}) {
+export default async function SignInPage(
+  props: {
+    params: Promise<{ slug: string }>;
+    searchParams?: Promise<{ [key: string]: string | undefined }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   return (
     <>
       <div className="h-screen w-screen flex justify-center items-center">
