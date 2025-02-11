@@ -29,13 +29,13 @@ const CategoryList = ({
           .map((category, index) => (
             <div
               key={category.id}
-              className={clsx("flex items-center justify-between py-4 gap-2 border-t-2 border-gray-100", { "!border-t-0": index === 0 })}
+              className={clsx("flex items-center justify-between py-4 gap-2 border-t-2 border-gray-100", { "border-t-0!": index === 0 })}
             >
               <p className="text-2xl flex items-center gap-4 basis-4/6">
                 {category.icon} <span className='text-lg font-semibold'>{category.name}</span>
               </p>
               <Button
-                className="basis-1/6 !bg-transparent !shadow-none text-gray-500 font-bold hover:underline hover:text-gray-900"
+                className="basis-1/6 bg-transparent! shadow-none! text-gray-500 font-bold hover:underline hover:text-gray-900"
                 onClick={() => {
                   setSelected(category);
                   setDeleteOpen(true);

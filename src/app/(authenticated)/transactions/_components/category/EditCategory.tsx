@@ -11,7 +11,7 @@ const EditCategory = ({
 }) => {
   return (
     <div
-      className="bg-gray-200/30 w-screen h-screen absolute backdrop-blur-sm top-0 left-0 z-50 flex items-center justify-center"
+      className="bg-gray-200/30 w-screen h-screen absolute backdrop-blur-xs top-0 left-0 z-50 flex items-center justify-center"
       onClick={(e) => {
         if ((e.target as Element).id == 'overlay') {
           setOpen(false);

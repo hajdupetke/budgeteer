@@ -1,3 +1,77 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-primary-50: #fbf5ff;
+  --color-primary-100: #f6e7ff;
+  --color-primary-200: #eed3ff;
+  --color-primary-300: #e2b0ff;
+  --color-primary-400: #d07eff;
+  --color-primary-500: #be4dff;
+  --color-primary-600: #a81ff2;
+  --color-primary-700: #961ad6;
+  --color-primary-800: #7e1bae;
+  --color-primary-900: #68178c;
+  --color-primary-950: #490368;
+
+  --color-gray-50: #f6f6f6;
+  --color-gray-100: #e7e7e7;
+  --color-gray-200: #d1d1d1;
+  --color-gray-300: #b0b0b0;
+  --color-gray-400: #888888;
+  --color-gray-500: #707070;
+  --color-gray-600: #5d5d5d;
+  --color-gray-700: #4f4f4f;
+  --color-gray-800: #454545;
+  --color-gray-900: #3d3d3d;
+  --color-gray-950: #262626;
+
+  --color-success-50: #f2fbf5;
+  --color-success-100: #e0f8e7;
+  --color-success-200: #c3efd1;
+  --color-success-300: #94e1ae;
+  --color-success-400: #57c97d;
+  --color-success-500: #37b060;
+  --color-success-600: #28914c;
+  --color-success-700: #23723e;
+  --color-success-800: #205b34;
+  --color-success-900: #1c4b2e;
+  --color-success-950: #0a2916;
+
+  --color-warning-50: #fff1f1;
+  --color-warning-100: #ffe0e0;
+  --color-warning-200: #ffc6c6;
+  --color-warning-300: #ff9f9f;
+  --color-warning-400: #ff6767;
+  --color-warning-500: #fc3737;
+  --color-warning-600: #ea1f1f;
+  --color-warning-700: #c51010;
+  --color-warning-800: #a21212;
+  --color-warning-900: #861616;
+  --color-warning-950: #490606;
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --background-image-hero-pattern: url('/public/static/images/background.svg');
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}

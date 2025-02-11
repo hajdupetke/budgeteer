@@ -33,14 +33,14 @@ const NavLinks = () => {
               className={clsx(
                 'flex gap-4 items-center w-full px-2 font-bold border-l-2 border-transparent group-hover:text-primary-600 transition-colors',
                 {
-                  'text-primary-600 !border-primary-600': pathname === link.href,
+                  'text-primary-600 border-primary-600!': pathname === link.href,
                 }
               )}
             >
               <Icon
                 width={30}
                 height={30}
-                className={clsx('stroke-gray-500 group-hover:stroke-primary-600', { '!stroke-primary-600': pathname === link.href })}
+                className={clsx('stroke-gray-500 group-hover:stroke-primary-600', { 'stroke-primary-600!': pathname === link.href })}
               />{' '}
               {link.name}
             </Link>

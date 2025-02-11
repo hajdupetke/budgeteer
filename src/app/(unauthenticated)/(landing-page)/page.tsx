@@ -83,7 +83,7 @@ export default function Home() {
         </div>
         <Link
           href={'/sign-in'}
-          className={buttonVariants({ size: 'xl' }) + ' !rounded-full border'}
+          className={buttonVariants({ size: 'xl' }) + ' rounded-full! border'}
         >
           Get started today!
         </Link>

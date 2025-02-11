@@ -14,7 +14,7 @@ export default function AnimatedSidebar({
     <>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="md:hidden fixed bg-white shadow-xl border right-4 top-4 z-40 rounded-md p-2 text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+        className="md:hidden fixed bg-white shadow-xl border right-4 top-4 z-40 rounded-md p-2 text-gray-700 hover:bg-gray-300 focus:outline-hidden focus:ring-2 focus:ring-gray-400"
         aria-label="Toggle Sidebar"
       >
         <Menu className="h-6 w-6" />
@@ -27,7 +27,7 @@ export default function AnimatedSidebar({
       </div>
       {isOpen && (
         <div
-          className="fixed inset-0 z-20 bg-gray-200/30 backdrop-blur-sm transition-opacity duration-300 ease-in-out"
+          className="fixed inset-0 z-20 bg-gray-200/30 backdrop-blur-xs transition-opacity duration-300 ease-in-out"
           onClick={() => setIsOpen(false)}
         ></div>
       )}

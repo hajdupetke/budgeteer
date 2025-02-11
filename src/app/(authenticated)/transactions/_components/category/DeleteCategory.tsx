@@ -12,7 +12,7 @@ const DeleteCategory = ({
 }) => {
   return (
     <div
-      className="bg-gray-200/30 w-screen h-screen absolute backdrop-blur-sm top-0 left-0 z-50 flex items-center justify-center"
+      className="bg-gray-200/30 w-screen h-screen absolute backdrop-blur-xs top-0 left-0 z-50 flex items-center justify-center"
       onClick={(e) => {
         if ((e.target as Element).id == 'overlay') {
           setOpen(false);
@@ -36,14 +36,14 @@ const DeleteCategory = ({
           will now have no category.
         </p>
         <div className="flex gap-1 mt-4 justify-end">
-          <Button onClick={() => setOpen(false)} className='!bg-transparent !shadow-none text-gray-600 font-bold hover:text-gray-900'>Cancel</Button>
+          <Button onClick={() => setOpen(false)} className='bg-transparent! shadow-none! text-gray-600 font-bold hover:text-gray-900'>Cancel</Button>
           <Button
             variant="destructive"
             onClick={async () => {
               const res = await deleteTransactionCategory(category.id);
               if (res.success) setOpen(false);
             }}
-            className='!bg-warning-600 font-bold hover:!bg-warning-800'
+            className='bg-warning-600! font-bold hover:bg-warning-800!'
           >
             Delete
           </Button>

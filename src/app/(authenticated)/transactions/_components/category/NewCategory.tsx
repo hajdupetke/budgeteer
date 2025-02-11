@@ -21,7 +21,7 @@ const NewCategory = () => {
       </button>
       {open && (
         <div
-          className="bg-gray-200/30 backdrop-blur-sm w-screen h-screen absolute top-0 left-0 z-50 flex items-center justify-center"
+          className="bg-gray-200/30 backdrop-blur-xs w-screen h-screen absolute top-0 left-0 z-50 flex items-center justify-center"
           onClick={(e) => {
             if ((e.target as Element).id == 'overlay') {
               setOpen(false);
