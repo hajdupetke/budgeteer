@@ -18,7 +18,7 @@ export const getTransactionCategories = async () => {
   return categories;
 };
 
-const CategoryIndex = async () => {
+const Categories = async () => {
   const categories = await getTransactionCategories();
   console.log(categories);
 
@@ -33,4 +33,4 @@ const CategoryIndex = async () => {
   );
 };
 
-export default CategoryIndex;
+export default Categories;
