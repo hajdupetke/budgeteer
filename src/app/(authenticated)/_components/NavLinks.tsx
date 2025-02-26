@@ -10,7 +10,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import clsx from 'clsx';
+import { cn } from '@/lib/utils';
 
 const links = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -27,25 +27,28 @@ const NavLinks = () => {
       {links.map((link) => {
         const Icon = link.icon;
         return (
-          <div className='group' key={link.name}>
+          <div className="group" key={link.name}>
             <Link
               href={link.href}
-              className={clsx(
+              className={cn(
                 'flex gap-4 items-center w-full px-2 font-bold border-l-2 border-transparent group-hover:text-primary-600 transition-colors',
                 {
-                  'text-primary-600 border-primary-600!': pathname === link.href,
+                  'text-primary-600 border-primary-600!':
+                    pathname === link.href,
                 }
               )}
             >
               <Icon
                 width={30}
                 height={30}
-                className={clsx('stroke-gray-500 group-hover:stroke-primary-600', { 'stroke-primary-600!': pathname === link.href })}
+                className={cn(
+                  'stroke-gray-500 group-hover:stroke-primary-600',
+                  { 'stroke-primary-600!': pathname === link.href }
+                )}
               />{' '}
               {link.name}
             </Link>
           </div>
-
         );
       })}
       <form action={logOut}>
@@ -58,7 +61,9 @@ const NavLinks = () => {
             height={30}
             className="stroke-gray-500 group-hover:stroke-primary-600 border-l-2 border-transparent"
           />{' '}
-          <span className='group-hover:text-primary-600 transition-colors '>Sign out</span>
+          <span className="group-hover:text-primary-600 transition-colors ">
+            Sign out
+          </span>
         </button>
       </form>
     </div>
