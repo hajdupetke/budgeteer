@@ -1,9 +1,14 @@
 import { redirect } from 'next/navigation';
-import { signIn, auth, providerMap } from '@/lib/auth';
+import { signIn, auth } from '@/lib/auth';
 import { AuthError } from 'next-auth';
 import Image from 'next/image';
 
 const LoginForm = () => {
+  const providerMap = [
+    { id: 'github', name: 'GitHub' },
+    { id: 'google', name: 'Google' },
+  ];
+
   return (
     <>
       {Object.values(providerMap).map((provider) => (
@@ -21,6 +26,7 @@ const LoginForm = () => {
               throw error;
             }
           }}
+          key={provider.id}
         >
           <button
             type="submit"

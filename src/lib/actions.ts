@@ -34,20 +34,6 @@ export const createTransactionCategory = async (formData: FormData) => {
   return { success: true };
 };
 
-/* Get all transaction categories */
-
-export const getTransactionCategories = async () => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User not logged in');
-
-  const categories = await db.transactionCategory.findMany({
-    where: { OR: [{ userId: session.user.id }, { userId: null }] },
-  });
-
-  return categories;
-};
-
 /* Update TransactionCategory by id */
 
 export const updateTransactionCategory = async (

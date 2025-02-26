@@ -1,25 +1,15 @@
 import NextAuth from 'next-auth';
-import google from 'next-auth/providers/google';
-import github from 'next-auth/providers/github';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { db } from './db';
-import type { Provider } from 'next-auth/providers';
+import github from 'next-auth/providers/github';
+import google from 'next-auth/providers/google';
 import { create } from 'domain';
-
-const providers: Provider[] = [google, github];
-
-export const providerMap = providers.map((provider) => {
-  if (typeof provider === 'function') {
-    const providerData = provider();
-    return { id: providerData.id, name: providerData.name };
-  } else {
-    return { id: provider.id, name: provider.name };
-  }
-});
+import authConfig from './auth.config';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
   adapter: PrismaAdapter(db),
-  providers,
+  session: { strategy: 'jwt' },
   pages: {
     signIn: '/sign-in',
   },
@@ -38,5 +28,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       return true;
     },
+    async jwt({ token, user }) {
+      if (user) token.id = user.id;
+      return token;
+    },
+    async session({ session, token }) {
+      session.user.id = token.id as string;
+      return session;
+    },
   },
+  providers: [github, google],
 });

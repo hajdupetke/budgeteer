@@ -18,8 +18,8 @@ export default async function LandingPageLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth();
-  if (session?.user) redirect('/dashboard');
+  // const session = await auth();
+  // if (session?.user) redirect('/dashboard');
 
   return (
     <html lang="en" className={inter.className}>

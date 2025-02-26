@@ -113,7 +113,6 @@ export default function Home() {
           alt="background image"
           fill
           quality={100}
-          priority
           draggable="false"
           className="object-cover block md:hidden"
         />
