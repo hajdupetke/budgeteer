@@ -8,9 +8,11 @@ const Profile = async () => {
   return (
     <div className="flex items-center gap-4 my-8 px-2">
       {session?.user?.image ? (
-        <img
+        <Image
           src={session?.user?.image as string}
           alt={`${session?.user?.name}'s avatar`}
+          width={100}
+          height={100}
           className="h-10 w-10 rounded-full border"
         />
       ) : (
