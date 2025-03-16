@@ -6,7 +6,6 @@ export default {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const publicPages = ['/', '/sign-in'];
-      console.log(nextUrl.pathname);
 
       if (publicPages.includes(nextUrl.pathname)) {
         // Redirect logged in users from landing page

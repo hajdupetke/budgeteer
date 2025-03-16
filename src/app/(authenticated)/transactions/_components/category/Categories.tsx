@@ -1,27 +1,14 @@
 'use server';
 
+import { TransactionCategory } from '@prisma/client';
 import CategoryList from './CategoryList';
 import NewCategory from './NewCategory';
-import { db } from '@/lib/db';
-import { auth } from '@/lib/auth';
 
-export const getTransactionCategories = async () => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User not logged in');
-  console.log(session.user);
-
-  const categories = await db.transactionCategory.findMany({
-    where: { OR: [{ userId: session.user.id }, { userId: null }] },
-  });
-
-  return categories;
-};
-
-const Categories = async () => {
-  const categories = await getTransactionCategories();
-  console.log(categories);
-
+const Categories = async ({
+  categories,
+}: {
+  categories: TransactionCategory[];
+}) => {
   return (
     <div className="w-full py-2">
       <div className="flex items-center justify-between">
