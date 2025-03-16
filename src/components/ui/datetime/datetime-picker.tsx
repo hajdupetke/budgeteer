@@ -131,7 +131,7 @@ export function DateTimePicker({
   return (
     <div className={cn('grid gap-2', className)}>
       <Popover>
-        <PopoverTrigger asChild>
+        <PopoverTrigger asChild className="h-12">
           <Button
             id="date"
             variant={'outline'}
@@ -155,14 +155,14 @@ export function DateTimePicker({
             onSelect={handleSelect}
             initialFocus
           />
-          <div className="border-t border-border p-3 flex justify-between">
+          <div className="border-t border-border p-3 flex justify-between items-center">
             <div className="text-sm font-medium">Time:</div>
             <div className="flex items-center gap-2">
               <Select
                 value={selectedTime.hours}
                 onValueChange={(value) => handleTimeChange('hours', value)}
               >
-                <SelectTrigger className="w-16">
+                <SelectTrigger className="w-17">
                   <SelectValue placeholder="Hours" />
                 </SelectTrigger>
                 <SelectContent>
@@ -178,7 +178,7 @@ export function DateTimePicker({
                 value={selectedTime.minutes}
                 onValueChange={(value) => handleTimeChange('minutes', value)}
               >
-                <SelectTrigger className="w-16">
+                <SelectTrigger className="w-17">
                   <SelectValue placeholder="Minutes" />
                 </SelectTrigger>
                 <SelectContent>
