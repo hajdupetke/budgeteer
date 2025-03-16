@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import clsx from 'clsx';
 import EditTransaction from './EditTransaction';
 import { TransactionCategory } from '@prisma/client';
+import DeleteTransaction from './DeleteTransaction';
 
 const TransactionList = ({
   transactions,
@@ -59,6 +60,7 @@ const TransactionList = ({
                 className="w-full bg-transparent! shadow-none! text-gray-500 font-bold hover:underline hover:text-gray-900"
                 onClick={() => {
                   setSelected(transaction);
+                  setDeleteOpen(true);
                 }}
               >
                 Delete
@@ -82,6 +84,12 @@ const TransactionList = ({
           transaction={selected}
           setOpen={(bool) => setEditOpen(bool)}
           categories={categories}
+        />
+      )}
+      {deleteOpen && (
+        <DeleteTransaction
+          transaction={selected}
+          setOpen={(bool) => setDeleteOpen(bool)}
         />
       )}
     </>

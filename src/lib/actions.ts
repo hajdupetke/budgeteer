@@ -142,3 +142,14 @@ export const updateTransaction = async (
   revalidatePath('/transactions');
   return { success: true };
 };
+
+export const deleteTransaction = async (transactionId: number) => {
+  await db.transaction.delete({
+    where: {
+      id: transactionId,
+    },
+  });
+
+  revalidatePath('/transactions');
+  return { success: true };
+};
