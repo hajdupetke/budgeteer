@@ -41,9 +41,9 @@ const Transactions = async ({
     <div className="w-full py-2">
       <div className="flex items-center justify-between">
         <h2 className="font-bold text-3xl">Transactions</h2>
-        <NewTransaction categories={categories}/>
+        <NewTransaction categories={categories} />
       </div>
-      <TransactionList transactions={transactions} />
+      <TransactionList transactions={transactions} categories={categories} />
     </div>
   );
 };

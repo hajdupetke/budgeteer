@@ -12,7 +12,7 @@ const CategoryList = ({
 }: {
   categories: TransactionCategory[];
 }) => {
-  const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [selected, setSelected] = useState<TransactionCategory>(categories[0]);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
@@ -53,7 +53,7 @@ const CategoryList = ({
                 className="basis-1/6 bg-primary-200 text-primary-900 font-bold hover:bg-primary-300 transition-colors rounded-xl"
                 onClick={() => {
                   setSelected(category);
-                  setOpen(true);
+                  setEditOpen(true);
                 }}
               >
                 Edit
@@ -61,8 +61,11 @@ const CategoryList = ({
             </div>
           ))}
       </div>
-      {open && (
-        <EditCategory category={selected} setOpen={(bool) => setOpen(bool)} />
+      {editOpen && (
+        <EditCategory
+          category={selected}
+          setOpen={(bool) => setEditOpen(bool)}
+        />
       )}
       {deleteOpen && (
         <DeleteCategory

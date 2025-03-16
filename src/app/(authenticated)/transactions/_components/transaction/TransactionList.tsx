@@ -4,12 +4,18 @@ import { TransactionWithCategory } from '@/types/transaction';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import clsx from 'clsx';
+import EditTransaction from './EditTransaction';
+import { TransactionCategory } from '@prisma/client';
 
 const TransactionList = ({
   transactions,
+  categories,
 }: {
   transactions: TransactionWithCategory[];
+  categories: TransactionCategory[];
 }) => {
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [selected, setSelected] = useState<TransactionWithCategory>(
     transactions[0]
   );
@@ -62,6 +68,7 @@ const TransactionList = ({
                 className="w-full bg-primary-200 text-primary-900 font-bold hover:bg-primary-300 transition-colors rounded-xl"
                 onClick={() => {
                   setSelected(transaction);
+                  setEditOpen(true);
                 }}
               >
                 Edit
@@ -70,6 +77,13 @@ const TransactionList = ({
           </div>
         ))}
       </div>
+      {editOpen && (
+        <EditTransaction
+          transaction={selected}
+          setOpen={(bool) => setEditOpen(bool)}
+          categories={categories}
+        />
+      )}
     </>
   );
 };

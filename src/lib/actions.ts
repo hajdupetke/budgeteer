@@ -110,6 +110,35 @@ export const updateTransaction = async (
   formData: FormData,
   transactionId: number
 ) => {
-  console.log(formData);
+  const name = formData.get('name') as string;
+  const amount = Number.parseFloat(formData.get('amount') as string);
+  const categoryId = Number.parseInt(formData.get('categoryId') as string);
+  const dateStr = formData.get('timestamp') as string;
+  const session = await auth();
+
+  if (!session?.user) return { success: false };
+
+  const updatedTransaction = await db.transaction.update({
+    where: {
+      id: transactionId,
+    },
+    data: {
+      name,
+      amount: new Prisma.Decimal(amount),
+      timestamp: new Date(dateStr),
+      category: {
+        connect: {
+          id: categoryId,
+        },
+      },
+      user: {
+        connect: {
+          id: session.user.id,
+        },
+      },
+    },
+  });
+
+  revalidatePath('/transactions');
   return { success: true };
 };

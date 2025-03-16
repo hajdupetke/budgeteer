@@ -38,7 +38,9 @@ export default function TransactionForm({
   categories: TransactionCategory[];
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [date, setDate] = useState<Date | undefined>(
+    transaction?.timestamp ?? undefined
+  );
   const isEditing = !!transaction;
 
   // Make form using useForm hook
@@ -47,11 +49,11 @@ export default function TransactionForm({
     defaultValues: {
       id: transaction?.id || 0,
       name: transaction?.name || '',
-      amount: transaction?.amount || '0',
+      amount: transaction?.amount || 0,
+      categoryId: transaction?.categoryId || 0,
+      timestamp: transaction?.timestamp || new Date(),
     },
   });
-
-  console.log('Form errors:', form.formState.errors);
 
   useEffect(() => {
     if (transaction) {
@@ -65,7 +67,7 @@ export default function TransactionForm({
       const formData = new FormData();
       formData.append('name', values.name);
       formData.append('amount', values.amount.toString());
-      formData.append('categoryId', values.categoryId);
+      formData.append('categoryId', values.categoryId.toString());
       if (values.timestamp)
         formData.append('timestamp', new Date(values.timestamp).toString());
       console.log(formData);
@@ -77,6 +79,8 @@ export default function TransactionForm({
       if (res.success && onSuccess) onSuccess();
     } catch (err) {
       console.log(err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -116,7 +120,10 @@ export default function TransactionForm({
                   className="placeholder:text-slate-400 bg-white h-12 text-sm"
                   type="number"
                   step={0.01}
-                  {...field}
+                  value={field.value}
+                  onChange={(e) =>
+                    field.onChange(parseFloat(e.target.value) || 0)
+                  }
                 />
               </FormControl>
               <FormMessage />
@@ -132,7 +139,11 @@ export default function TransactionForm({
               <FormLabel className="text-md text-gray-800 font-semibold my-2">
                 Category
               </FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select
+                onValueChange={(value) => field.onChange(parseInt(value, 10))}
+                defaultValue={field.value ? field.value.toString() : undefined}
+                value={field.value ? field.value.toString() : undefined}
+              >
                 <FormControl>
                   <SelectTrigger className="w-full placeholder:text-slate-400 bg-white !h-12 text-sm">
                     <SelectValue placeholder="Select a category" />
