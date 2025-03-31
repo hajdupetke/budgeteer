@@ -16,3 +16,13 @@ export type TransactionWithCategory = Omit<
 > & {
   amount: number;
 };
+
+type PrimsaReportTransactions = Prisma.TransactionGetPayload<{
+  include: {
+    category: true;
+  };
+}>;
+
+export type ReportTransactions = Omit<PrimsaReportTransactions, 'amount'> & {
+  amount: number;
+};
