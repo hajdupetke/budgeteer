@@ -5,8 +5,14 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import clsx from 'clsx';
 import EditTransaction from './EditTransaction';
-import { TransactionCategory } from '@prisma/client';
+import { TransactionCategory, TransactionType } from '@prisma/client';
 import DeleteTransaction from './DeleteTransaction';
+import {
+  MoveUpRight,
+  MoveDownRight,
+  TrendingUp,
+  TrendingDown,
+} from 'lucide-react';
 
 const TransactionList = ({
   transactions,
@@ -36,15 +42,22 @@ const TransactionList = ({
           <div
             key={transaction.id}
             className={clsx(
-              'grid grid-cols-4  items-center justify-between py-4 gap-2 border-t-2 border-gray-100',
+              'grid grid-cols-4  items-center justify-between py-4 border-t-2 border-gray-100',
               { 'border-t-0!': index === 0 }
             )}
           >
-            <p className="text-2xl flex items-center gap-4">
-              {transaction.category.icon}{' '}
-              <span className="text-lg font-semibold">{transaction.name}</span>
+            <p className="text-2xl flex items-center justify-center gap-4">
+              {transaction.type === TransactionType.INCOME ? (
+                <TrendingUp className="text-success-600" />
+              ) : (
+                <TrendingDown className="text-warning-600" />
+              )}
+              {transaction.category.icon}
+              <span className="text-lg font-semibold flex items-center gap-2">
+                {transaction.name}{' '}
+              </span>
             </p>
-            <p className="text-center">{transaction.amount}</p>
+            <p className="text-center">{transaction.amount} EUR</p>
             <p className="text-center">
               {transaction.timestamp.toLocaleString('en-us', {
                 year: 'numeric',

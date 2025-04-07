@@ -24,4 +24,5 @@ export const TransactionSchema = z.object({
   amount: z.number(),
   categoryId: z.number(),
   timestamp: z.date(),
+  type: z.enum(['INCOME', 'EXPENSE']),
 });

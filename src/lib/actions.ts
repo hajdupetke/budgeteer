@@ -5,6 +5,7 @@ import { db } from './db';
 import { revalidatePath } from 'next/cache';
 import { auth } from './auth';
 import { Prisma } from '@prisma/client';
+import { TransactionType } from '@prisma/client';
 
 export const logOut = async () => {
   await signOut();
@@ -78,6 +79,7 @@ export const createTransaction = async (formData: FormData) => {
   const amount = Number.parseFloat(formData.get('amount') as string);
   const categoryId = Number.parseInt(formData.get('categoryId') as string);
   const dateStr = formData.get('timestamp') as string;
+  const transactionType = formData.get('transactionType') as string;
   const session = await auth();
 
   if (!session?.user) return { success: false };
@@ -87,6 +89,10 @@ export const createTransaction = async (formData: FormData) => {
       name,
       amount: new Prisma.Decimal(amount),
       timestamp: new Date(dateStr),
+      type:
+        transactionType === 'income'
+          ? TransactionType.INCOME
+          : TransactionType.EXPENSE,
       category: {
         connect: {
           id: categoryId,
@@ -114,6 +120,7 @@ export const updateTransaction = async (
   const amount = Number.parseFloat(formData.get('amount') as string);
   const categoryId = Number.parseInt(formData.get('categoryId') as string);
   const dateStr = formData.get('timestamp') as string;
+  const transactionType = formData.get('transactionType') as string;
   const session = await auth();
 
   if (!session?.user) return { success: false };
@@ -126,6 +133,10 @@ export const updateTransaction = async (
       name,
       amount: new Prisma.Decimal(amount),
       timestamp: new Date(dateStr),
+      type:
+        transactionType === 'income'
+          ? TransactionType.INCOME
+          : TransactionType.EXPENSE,
       category: {
         connect: {
           id: categoryId,

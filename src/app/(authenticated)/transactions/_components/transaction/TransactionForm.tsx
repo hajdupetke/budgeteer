@@ -52,6 +52,7 @@ export default function TransactionForm({
       amount: transaction?.amount || 0,
       categoryId: transaction?.categoryId || 0,
       timestamp: transaction?.timestamp || new Date(),
+      type: transaction?.type || 'INCOME',
     },
   });
 
@@ -68,6 +69,7 @@ export default function TransactionForm({
       formData.append('name', values.name);
       formData.append('amount', values.amount.toString());
       formData.append('categoryId', values.categoryId.toString());
+      formData.append('transactionType', values.type);
       if (values.timestamp)
         formData.append('timestamp', new Date(values.timestamp).toString());
       console.log(formData);
@@ -108,6 +110,29 @@ export default function TransactionForm({
         />
         <FormField
           control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem className="my-4">
+              <FormLabel className="text-md text-gray-800 font-semibold my-2">
+                Transaction Type
+              </FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger className="w-full placeholder:text-slate-400 bg-white !h-12 text-sm">
+                    <SelectValue placeholder="Select transaction type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="INCOME">Income</SelectItem>
+                  <SelectItem value="EXPENSE">Expense</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
           name="amount"
           render={({ field }) => (
             <FormItem className="my-4">
@@ -116,7 +141,7 @@ export default function TransactionForm({
               </FormLabel>
               <FormControl>
                 <Input
-                  placeholder="100$"
+                  placeholder="100 EUR"
                   className="placeholder:text-slate-400 bg-white h-12 text-sm"
                   type="number"
                   step={0.01}
