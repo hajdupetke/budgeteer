@@ -2,8 +2,8 @@ import { ReportTransactions } from '@/types/transaction';
 import { ExpensesByCategory } from './ExpensesByCategory';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { ChartConfig } from '@/components/ui/chart';
-import { CategoryChartConfig, CategoryChartData } from '@/types/reports';
+import { CategoryChartData } from '@/types/reports';
+import { TransactionType } from '@prisma/client';
 
 const getExpensesByCategory = async (
   startDate: string,
@@ -32,6 +32,7 @@ const getExpensesByCategory = async (
               lte: new Date(endDate),
               gte: new Date(startDate),
             },
+            type: TransactionType.EXPENSE,
           },
         })
       : await db.transaction.groupBy({
@@ -39,6 +40,7 @@ const getExpensesByCategory = async (
           _sum: {
             amount: true,
           },
+          where: { type: TransactionType.EXPENSE },
         });
 
   const expensesByCategory = expensesByCategoryId.map(
@@ -51,7 +53,7 @@ const getExpensesByCategory = async (
         sum: categoryExpense._sum.amount
           ? categoryExpense._sum.amount.toNumber()
           : 0,
-        //fill: `var(--color-primary-${(index + 1) * 100})`,
+        fill: `var(--chart-color-${index + 1})`,
       };
 
       return chartData;
@@ -74,7 +76,6 @@ export const Reports = async ({
   const { startDate, endDate } = await date;
 
   const expensesByCategory = await getExpensesByCategory(startDate, endDate);
-  console.log(expensesByCategory);
 
   return (
     <div>

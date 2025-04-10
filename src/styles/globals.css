@@ -78,18 +78,63 @@
 
 @layer base {
   :root {
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-  }
+    /* Base primary color in HSL */
+    --chart-hue-primary: 276; /* Purple hue from your primary color */
+    --chart-saturation-primary: 100%;
+    --chart-lightness-primary: 65%;
 
-  .dark {
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    /* Chart colors - variations of your primary purple with different lightness levels */
+    --chart-color-1: hsl(
+      var(--chart-hue-primary),
+      var(--chart-saturation-primary),
+      var(--chart-lightness-primary)
+    ); /* Standard primary */
+    --chart-color-2: hsl(
+      var(--chart-hue-primary),
+      var(--chart-saturation-primary),
+      45%
+    ); /* Darker primary */
+    --chart-color-3: hsl(
+      var(--chart-hue-primary),
+      var(--chart-saturation-primary),
+      75%
+    ); /* Lighter primary */
+    --chart-color-4: hsl(
+      var(--chart-hue-primary),
+      80%,
+      85%
+    ); /* Very light primary */
+
+    /* Additional variations if needed */
+    --chart-color-5: hsl(
+      var(--chart-hue-primary),
+      90%,
+      55%
+    ); /* Slightly darker, slightly less saturated */
+    --chart-color-6: hsl(
+      var(--chart-hue-primary),
+      70%,
+      70%
+    ); /* Slightly lighter, less saturated */
+    --chart-color-7: hsl(
+      var(--chart-hue-primary),
+      60%,
+      80%
+    ); /* Much lighter, less saturated */
+    --chart-color-8: hsl(var(--chart-hue-primary), 100%, 35%); /* Much darker */
+
+    /* More subtle variations */
+    --chart-color-9: hsl(
+      calc(var(--chart-hue-primary) - 10),
+      var(--chart-saturation-primary),
+      60%
+    );
+    --chart-color-10: hsl(
+      calc(var(--chart-hue-primary) + 10),
+      var(--chart-saturation-primary),
+      70%
+    );
+    --chart-color-11: hsl(calc(var(--chart-hue-primary) - 15), 90%, 50%);
+    --chart-color-12: hsl(calc(var(--chart-hue-primary) + 15), 90%, 80%);
   }
 }
