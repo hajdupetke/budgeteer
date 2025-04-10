@@ -83,16 +83,14 @@ export const createTransaction = async (formData: FormData) => {
   const session = await auth();
 
   if (!session?.user) return { success: false };
+  console.log(transactionType);
 
   const newTransaction = await db.transaction.create({
     data: {
       name,
       amount: new Prisma.Decimal(amount),
       timestamp: new Date(dateStr),
-      type:
-        transactionType === 'income'
-          ? TransactionType.INCOME
-          : TransactionType.EXPENSE,
+      type: TransactionType[transactionType as keyof typeof TransactionType],
       category: {
         connect: {
           id: categoryId,
@@ -133,10 +131,7 @@ export const updateTransaction = async (
       name,
       amount: new Prisma.Decimal(amount),
       timestamp: new Date(dateStr),
-      type:
-        transactionType === 'income'
-          ? TransactionType.INCOME
-          : TransactionType.EXPENSE,
+      type: TransactionType[transactionType as keyof typeof TransactionType],
       category: {
         connect: {
           id: categoryId,

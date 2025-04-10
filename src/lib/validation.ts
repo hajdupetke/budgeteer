@@ -21,7 +21,7 @@ export const TransactionSchema = z.object({
     .string({ message: 'Transaction name is required!' })
     .min(3, 'Transaction name must be at least 3 characters')
     .max(50, 'Transaction name must not exceed 50 characters'),
-  amount: z.number(),
+  amount: z.string(),
   categoryId: z.number(),
   timestamp: z.date(),
   type: z.enum(['INCOME', 'EXPENSE']),

@@ -49,7 +49,7 @@ export default function TransactionForm({
     defaultValues: {
       id: transaction?.id || 0,
       name: transaction?.name || '',
-      amount: transaction?.amount || 0,
+      amount: transaction?.amount || '0',
       categoryId: transaction?.categoryId || 0,
       timestamp: transaction?.timestamp || new Date(),
       type: transaction?.type || 'INCOME',
@@ -58,7 +58,11 @@ export default function TransactionForm({
 
   useEffect(() => {
     if (transaction) {
-      form.reset(transaction);
+      const formattedTransaction = {
+        ...transaction,
+        amount: String(transaction.amount),
+      };
+      form.reset(formattedTransaction);
     }
   }, [transaction, form]);
 
@@ -67,7 +71,7 @@ export default function TransactionForm({
     try {
       const formData = new FormData();
       formData.append('name', values.name);
-      formData.append('amount', values.amount.toString());
+      formData.append('amount', values.amount);
       formData.append('categoryId', values.categoryId.toString());
       formData.append('transactionType', values.type);
       if (values.timestamp)
@@ -140,16 +144,47 @@ export default function TransactionForm({
                 Amount
               </FormLabel>
               <FormControl>
-                <Input
-                  placeholder="100 EUR"
-                  className="placeholder:text-slate-400 bg-white h-12 text-sm"
-                  type="number"
-                  step={0.01}
-                  value={field.value}
-                  onChange={(e) =>
-                    field.onChange(parseFloat(e.target.value) || 0)
-                  }
-                />
+                <div className="relative">
+                  <Input
+                    placeholder="Amount"
+                    className="placeholder:text-slate-400 bg-white h-12 text-sm"
+                    type="text"
+                    onChange={(e) => {
+                      let val = e.target.value;
+
+                      // If string is empty make the value 0
+                      if (val === '') {
+                        field.onChange('0');
+                        return;
+                      }
+
+                      // Replace all characters that are not digits or a decimal point with empty string
+                      val = val.replace(/[^\d.]/g, '');
+
+                      // Only one decimal point and only 2 digits after decimal point
+                      const numArr = val.split('.');
+                      if (numArr.length > 1)
+                        val =
+                          numArr[0] +
+                          '.' +
+                          numArr.slice(1).join('').substring(0, 2);
+
+                      // Handle leading 0's
+                      if (
+                        val.startsWith('0') &&
+                        val.length > 1 &&
+                        val[1] !== '.'
+                      )
+                        val = val.substring(1);
+
+                      field.onChange(val);
+                    }}
+                    value={field.value}
+                  />
+                  <span className="absolute inset-y-1 right-3 flex items-center font-bold text-gray-400">
+                    EUR
+                  </span>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
