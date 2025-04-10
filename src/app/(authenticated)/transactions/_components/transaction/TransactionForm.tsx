@@ -58,11 +58,7 @@ export default function TransactionForm({
 
   useEffect(() => {
     if (transaction) {
-      const formattedTransaction = {
-        ...transaction,
-        amount: String(transaction.amount),
-      };
-      form.reset(formattedTransaction);
+      form.reset(transaction);
     }
   }, [transaction, form]);
 

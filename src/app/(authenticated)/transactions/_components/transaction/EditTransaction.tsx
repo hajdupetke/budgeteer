@@ -37,7 +37,7 @@ const EditTransaction = ({
             setOpen(false);
           }}
           categories={categories}
-          transaction={{ ...transaction }}
+          transaction={{ ...transaction, amount: String(transaction.amount) }}
         />
       </div>
     </div>
