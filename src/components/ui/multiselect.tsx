@@ -22,8 +22,8 @@ export type MultiSelectOption = {
 
 interface MultiSelectProps {
   options: MultiSelectOption[];
-  selected: string[];
-  onChange: (selection: string[]) => void;
+  selected: any[];
+  onChange: (selection: any[]) => void;
   placeholder?: string;
   emptyMessage?: string;
   className?: string;

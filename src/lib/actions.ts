@@ -104,7 +104,6 @@ export const createTransaction = async (formData: FormData) => {
   const session = await auth();
 
   if (!session?.user) return { success: false };
-  console.log(transactionType);
 
   const newTransaction = await db.transaction.create({
     data: {
@@ -188,12 +187,11 @@ export const deleteTransaction = async (transactionId: number) => {
 
 export const getTransactions = async (dbOptions = {}) => {
   const session = await auth();
-  console.log(dbOptions);
 
   if (!session?.user) throw new Error('User is not logged in!');
 
   const transactions = db.transaction.findMany({
-    where: { OR: [{ userId: session.user.id }] },
+    where: { userId: session.user.id },
     ...dbOptions,
   });
 
@@ -223,6 +221,7 @@ export const getExpensesByCategory = async (
               gte: new Date(startDate),
             },
             type: TransactionType.EXPENSE,
+            userId: session.user.id,
           },
         })
       : await db.transaction.groupBy({
@@ -230,7 +229,7 @@ export const getExpensesByCategory = async (
           _sum: {
             amount: true,
           },
-          where: { type: TransactionType.EXPENSE },
+          where: { type: TransactionType.EXPENSE, userId: session.user.id },
         });
   return expensesByCategory;
 };
@@ -239,9 +238,8 @@ export const getExpensesByCategory = async (
 
 export const createBudget = async (formData: FormData) => {
   const name = formData.get('name') as string;
-  const maxAmount = Number.parseFloat(formData.get('maxAmount') as string);
+  const max = Number.parseFloat(formData.get('max') as string);
   const categoryIds = JSON.parse(formData.get('categoryIds') as string);
-  console.log(name, maxAmount, categoryIds);
 
   const session = await auth();
 
@@ -254,7 +252,7 @@ export const createBudget = async (formData: FormData) => {
   const budget = await db.budget.create({
     data: {
       name: name,
-      max: Prisma.Decimal(maxAmount),
+      max: Prisma.Decimal(max),
       user: {
         connect: {
           id: session.user.id,
@@ -265,6 +263,70 @@ export const createBudget = async (formData: FormData) => {
       },
     },
   });
+  revalidatePath('/budgets');
+  return { success: true };
+};
 
+export const getBudgets = async (dbOptions = {}) => {
+  const session = await auth();
+
+  if (!session?.user) throw new Error('User not logged in');
+
+  const budgets = await db.budget.findMany({
+    where: {
+      userId: session.user.id,
+    },
+    ...dbOptions,
+  });
+
+  return budgets;
+};
+
+export const deleteBudget = async (budgetId: number) => {
+  const session = await auth();
+
+  if (!session?.user) throw new Error('User not logged in');
+
+  await db.budget.delete({
+    where: {
+      id: budgetId,
+    },
+  });
+
+  revalidatePath('/budgets');
+  return { success: true };
+};
+
+export const updateBudget = async (formData: FormData, budgetId: number) => {
+  const session = await auth();
+
+  if (!session?.user) throw new Error('User not logged in');
+
+  const name = formData.get('name') as string;
+  const max = Number.parseFloat(formData.get('max') as string);
+  const categoryIds = JSON.parse(formData.get('categoryIds') as string);
+
+  const categories = await db.transactionCategory.findMany({
+    where: { id: { in: categoryIds } },
+  });
+
+  const budget = await db.budget.update({
+    where: {
+      id: budgetId,
+    },
+    data: {
+      name: name,
+      max: Prisma.Decimal(max),
+      user: {
+        connect: {
+          id: session.user.id,
+        },
+      },
+      categories: {
+        connect: categories,
+      },
+    },
+  });
+  revalidatePath('/budgets');
   return { success: true };
 };

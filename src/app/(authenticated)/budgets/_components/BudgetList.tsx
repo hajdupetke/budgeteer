@@ -1,0 +1,92 @@
+'use client';
+
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { BudgetWithCategory } from '@/types/budget';
+import { cn } from '@/lib/utils';
+import DeleteBudget from './DeleteBudget';
+import EditBudget from './EditBudget';
+import { MultiSelectOption } from '@/components/ui/multiselect';
+
+const BudgetList = ({
+  budgets,
+  categories,
+}: {
+  budgets: BudgetWithCategory[];
+  categories: MultiSelectOption[];
+}) => {
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [selected, setSelected] = useState<BudgetWithCategory>(budgets[0]);
+
+  return (
+    <>
+      <div className="w-full p-4 bg-gray-50 shadow-gray-300 drop-shadow-md rounded-xl my-5">
+        <div className="grid grid-cols-4 items-center justify-between py-4 border-b-2 border-gray-100">
+          <p className="font-semibold text-gray-500 text-center">Name</p>
+          <p className="font-semibold text-gray-500 text-center">Max amount</p>
+          <p className="font-semibold text-gray-500 text-center">Categories</p>
+          <p className="basis-2/6 text-center font-semibold text-gray-500">
+            Actions
+          </p>
+        </div>
+        {budgets.map((budget, index) => (
+          <div
+            key={budget.id}
+            className={cn(
+              'grid grid-cols-4  items-center justify-between py-4 border-t-2 border-gray-100',
+              { 'border-t-0!': index === 0 }
+            )}
+          >
+            <p className="text-2xl flex items-center justify-center gap-4">
+              <span className="text-lg font-semibold flex items-center gap-2">
+                {budget.name}{' '}
+              </span>
+            </p>
+            <p className="text-center">{budget.max} EUR</p>
+            <p className="text-center">
+              {budget.categories.map((category) => (
+                <span key={category.name}>{category.name} </span>
+              ))}
+            </p>
+            <div className="flex items-center justify-center gap-2">
+              <Button
+                className="w-content bg-transparent! shadow-none! text-gray-500 font-bold hover:underline hover:text-gray-900 cursor-pointer"
+                onClick={() => {
+                  setSelected(budget);
+                  setDeleteOpen(true);
+                }}
+              >
+                Delete
+              </Button>
+
+              <Button
+                className="w-content bg-primary-200 text-primary-900 font-bold hover:bg-primary-300 transition-colors rounded-xl"
+                onClick={() => {
+                  setSelected(budget);
+                  setEditOpen(true);
+                }}
+              >
+                Edit
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <DeleteBudget
+        open={deleteOpen}
+        setOpen={setDeleteOpen}
+        budget={selected}
+      />
+      <EditBudget
+        open={editOpen}
+        setOpen={setEditOpen}
+        budget={selected}
+        categories={categories}
+      />
+    </>
+  );
+};
+
+export default BudgetList;

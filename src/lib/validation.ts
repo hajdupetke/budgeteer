@@ -35,9 +35,7 @@ export const BudgetSchema = z.object({
     .string({ message: 'Budget name is required!' })
     .min(3, 'Budget name must be at least 3 characters')
     .max(50, 'Budget name must not exceed 50 characters'),
-  maxAmount: z.coerce
-    .number()
-    .min(0.01, 'Budget amount must be bigger than 0.'),
+  max: z.coerce.number().min(0.01, 'Budget amount must be bigger than 0.'),
   categoryIds: z
     .array(z.number())
     .min(1, 'Budget must have at least 1 category'),

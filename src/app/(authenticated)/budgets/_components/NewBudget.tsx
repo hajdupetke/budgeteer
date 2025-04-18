@@ -36,7 +36,7 @@ const NewBudget = ({ categories }: { categories: MultiSelectOption[] }) => {
           categories={categories}
           onSuccess={() => {
             setOpen(false);
-            toast('Budget successfully created!');
+            toast.success('Budget successfully created!');
           }}
         />
       </DialogContent>

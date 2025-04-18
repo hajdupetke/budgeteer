@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createBudget } from '@/lib/actions';
+import { updateBudget } from '@/lib/actions';
 import { BudgetSchema } from '@/lib/validation';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -16,30 +16,31 @@ import {
 import { Input } from '@/components/ui/input';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { cn } from '@/lib/utils';
 import { MultiSelect } from '@/components/ui/multiselect';
 import { CurrencyInput } from '@/components/ui/currency-input';
 
 type BudgetFormData = z.infer<typeof BudgetSchema>;
 
-export default function CreateBudgetForm({
+export default function EditBudgetForm({
   onSuccess,
   categories,
+  budget,
 }: {
   onSuccess?: () => void;
   categories: { label: string; value: string }[];
+  budget: BudgetFormData;
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selected, setSelected] = useState<any[]>([]);
+  const [selected, setSelected] = useState<any[]>(budget.categoryIds);
 
   // Make form using useForm hook
   const form = useForm<BudgetFormData>({
     resolver: zodResolver(BudgetSchema),
     defaultValues: {
-      id: 0,
-      name: '',
-      max: 0,
-      categoryIds: [],
+      id: budget.id,
+      name: budget.name,
+      max: budget.max,
+      categoryIds: budget.categoryIds,
     },
   });
 
@@ -50,7 +51,7 @@ export default function CreateBudgetForm({
       formData.append('name', values.name);
       formData.append('max', values.max.toString());
       formData.append('categoryIds', JSON.stringify(values.categoryIds));
-      const res = await createBudget(formData);
+      const res = await updateBudget(formData, budget.id as number);
       // if response is good run onSuccess function
       if (res.success && onSuccess) onSuccess();
     } catch (err) {
