@@ -234,3 +234,37 @@ export const getExpensesByCategory = async (
         });
   return expensesByCategory;
 };
+
+/* Create new Budget */
+
+export const createBudget = async (formData: FormData) => {
+  const name = formData.get('name') as string;
+  const maxAmount = Number.parseFloat(formData.get('maxAmount') as string);
+  const categoryIds = JSON.parse(formData.get('categoryIds') as string);
+  console.log(name, maxAmount, categoryIds);
+
+  const session = await auth();
+
+  if (!session?.user) throw new Error('User not logged in');
+
+  const categories = await db.transactionCategory.findMany({
+    where: { id: { in: categoryIds } },
+  });
+
+  const budget = await db.budget.create({
+    data: {
+      name: name,
+      max: Prisma.Decimal(maxAmount),
+      user: {
+        connect: {
+          id: session.user.id,
+        },
+      },
+      categories: {
+        connect: categories,
+      },
+    },
+  });
+
+  return { success: true };
+};

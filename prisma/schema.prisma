@@ -32,6 +32,7 @@ model User {
   sessions      Session[]
   transactionCategories TransactionCategory[]
   transactions  Transaction[]
+  budgets       Budget[]
  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -83,6 +84,7 @@ model TransactionCategory {
   name       String
   icon       String
   transactions Transaction[]
+  budgets    Budget[]
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -105,4 +107,16 @@ model Transaction {
 enum TransactionType {
   INCOME
   EXPENSE
+}
+
+model Budget {
+  id Int @id @default(autoincrement())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name String
+  max Decimal
+  categories TransactionCategory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

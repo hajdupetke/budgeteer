@@ -8,6 +8,7 @@ import {
   Calendar,
   SlidersHorizontal,
   LogOut,
+  CircleDollarSign,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -16,7 +17,7 @@ const links = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Transactions', href: '/transactions', icon: History },
   { name: 'Reports', href: '/reports', icon: Calendar },
-  { name: 'Settings', href: '/settings', icon: SlidersHorizontal },
+  { name: 'Budgets', href: '/budgets', icon: CircleDollarSign },
 ];
 
 const NavLinks = () => {
