@@ -49,7 +49,7 @@ export default function TransactionForm({
     defaultValues: {
       id: transaction?.id || 0,
       name: transaction?.name || '',
-      amount: transaction?.amount || '0',
+      amount: transaction?.amount || 0,
       categoryId: transaction?.categoryId || 0,
       timestamp: transaction?.timestamp || new Date(),
       type: transaction?.type || 'INCOME',
@@ -67,7 +67,7 @@ export default function TransactionForm({
     try {
       const formData = new FormData();
       formData.append('name', values.name);
-      formData.append('amount', values.amount);
+      formData.append('amount', values.amount.toString());
       formData.append('categoryId', values.categoryId.toString());
       formData.append('transactionType', values.type);
       if (values.timestamp)
