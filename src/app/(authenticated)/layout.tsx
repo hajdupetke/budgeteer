@@ -1,7 +1,6 @@
-import '@/styles/globals.css';
+import '@/app/globals.css';
 import { Metadata } from 'next';
-import { auth } from '@/lib/auth';
-import { redirect } from 'next/navigation';
+import { Toaster } from '@/components/ui/sonner';
 import { Nunito_Sans } from 'next/font/google';
 import SidebarNav from './_components/SidebarNav';
 import AnimatedSidebar from './_components/AnimatedSidebar';
@@ -31,6 +30,7 @@ export default async function AuthenticatedLayout({
           <SidebarNav />
         </AnimatedSidebar>
         <div className="w-full h-full p-4">{children}</div>
+        <Toaster />
       </body>
     </html>
   );
