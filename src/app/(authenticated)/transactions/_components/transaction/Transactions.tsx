@@ -1,41 +1,31 @@
 'use server';
 import TransactionList from './TransactionList';
 import { TransactionWithCategory } from '@/types/transaction';
-import { db } from '@/lib/db';
-import { auth } from '@/lib/auth';
 import NewTransaction from './NewTransaction';
 import { TransactionCategory } from '@prisma/client';
-
-export const getTransactions = async (): Promise<TransactionWithCategory[]> => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User not logged in');
-
-  const transactions = await db.transaction.findMany({
-    where: { OR: [{ userId: session.user.id }] },
-    include: {
-      category: {
-        select: {
-          icon: true,
-        },
-      },
-    },
-  });
-
-  const serializedTransactions = transactions.map((transaction) => ({
-    ...transaction,
-    amount: transaction.amount.toNumber(), // Convert Decimal to number
-  }));
-
-  return serializedTransactions;
-};
+import { getTransactions } from '@/lib/actions';
 
 const Transactions = async ({
   categories,
 }: {
   categories: TransactionCategory[];
 }) => {
-  const transactions = await getTransactions();
+  const transactions = (
+    await getTransactions({
+      include: {
+        category: {
+          select: {
+            icon: true,
+          },
+        },
+      },
+    })
+  ).map((transaction) => ({
+    ...transaction,
+    amount: transaction.amount.toNumber(),
+  })) as TransactionWithCategory[];
+
+  console.log(transactions);
 
   return (
     <div className="w-full py-2">

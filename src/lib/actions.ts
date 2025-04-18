@@ -66,10 +66,31 @@ export const updateTransactionCategory = async (
 /* Delete TransactionCategory by id */
 
 export const deleteTransactionCategory = async (categoryId: number) => {
+  const session = await auth();
+
+  // return false if user not logged in
+  if (!session?.user) return { success: false };
+
   await db.transactionCategory.delete({ where: { id: categoryId } });
 
   revalidatePath('/transactions');
   return { success: true };
+};
+
+/* Get TransactionCategories for user */
+
+export const getCategories = async (dbOptions = {}) => {
+  const session = await auth();
+
+  // return false if user not logged in
+  if (!session?.user) throw new Error('User not logged in');
+
+  const categories = await db.transactionCategory.findMany({
+    where: { OR: [{ userId: session.user.id }, { userId: null }] },
+    ...dbOptions,
+  });
+
+  return categories;
 };
 
 /* Create a new transaction */
@@ -150,6 +171,11 @@ export const updateTransaction = async (
 };
 
 export const deleteTransaction = async (transactionId: number) => {
+  const session = await auth();
+
+  // return false if user not logged in
+  if (!session?.user) return { success: false };
+
   await db.transaction.delete({
     where: {
       id: transactionId,
@@ -158,4 +184,53 @@ export const deleteTransaction = async (transactionId: number) => {
 
   revalidatePath('/transactions');
   return { success: true };
+};
+
+export const getTransactions = async (dbOptions = {}) => {
+  const session = await auth();
+  console.log(dbOptions);
+
+  if (!session?.user) throw new Error('User is not logged in!');
+
+  const transactions = db.transaction.findMany({
+    where: { OR: [{ userId: session.user.id }] },
+    ...dbOptions,
+  });
+
+  return transactions;
+};
+
+/* Get Expenses by category */
+
+export const getExpensesByCategory = async (
+  startDate: string,
+  endDate: string
+) => {
+  const session = await auth();
+
+  if (!session?.user) throw new Error('User not logged in');
+
+  const expensesByCategory =
+    startDate && endDate
+      ? await db.transaction.groupBy({
+          by: ['categoryId'],
+          _sum: {
+            amount: true,
+          },
+          where: {
+            timestamp: {
+              lte: new Date(endDate),
+              gte: new Date(startDate),
+            },
+            type: TransactionType.EXPENSE,
+          },
+        })
+      : await db.transaction.groupBy({
+          by: ['categoryId'],
+          _sum: {
+            amount: true,
+          },
+          where: { type: TransactionType.EXPENSE },
+        });
+  return expensesByCategory;
 };
