@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
-import '@/styles/globals.css';
+import '@/app/globals.css';
 import { Inter } from 'next/font/google';
-import { redirect } from 'next/navigation';
-import { auth } from '@/lib/auth';
 
 // If loading a variable font, you don't need to specify the font weight
 const inter = Inter({ subsets: ['latin'] });
@@ -18,9 +16,6 @@ export default async function LandingPageLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // const session = await auth();
-  // if (session?.user) redirect('/dashboard');
-
   return (
     <html lang="en" className={inter.className}>
       <body className="relative">{children}</body>

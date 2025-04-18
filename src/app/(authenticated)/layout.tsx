@@ -18,11 +18,6 @@ export default async function AuthenticatedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // const session = await auth();
-  // if (!session?.user) {
-  //   redirect('/');
-  // }
-
   return (
     <html lang="en" className={`text-gray-800 ${nunitoSans.className}`}>
       <body className="flex items-center h-screen w-screen overflow-hidden bg-white">

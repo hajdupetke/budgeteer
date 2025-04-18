@@ -68,9 +68,9 @@ const TransactionList = ({
                 hour12: false,
               })}
             </p>
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center gap-4">
               <Button
-                className="w-full bg-transparent! shadow-none! text-gray-500 font-bold hover:underline hover:text-gray-900"
+                className="w-content bg-transparent! shadow-none! text-gray-500 font-bold hover:underline hover:text-gray-900 !p-0"
                 onClick={() => {
                   setSelected(transaction);
                   setDeleteOpen(true);
@@ -80,7 +80,7 @@ const TransactionList = ({
               </Button>
 
               <Button
-                className="w-full bg-primary-200 text-primary-900 font-bold hover:bg-primary-300 transition-colors rounded-xl"
+                className="bg-primary-200 text-primary-900 font-bold hover:bg-primary-300 transition-colors rounded-xl"
                 onClick={() => {
                   setSelected(transaction);
                   setEditOpen(true);
