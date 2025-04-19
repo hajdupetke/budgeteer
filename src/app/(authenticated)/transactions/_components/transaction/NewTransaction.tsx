@@ -20,7 +20,7 @@ const NewTransaction = ({
         className={`${buttonVariants({
           variant: 'default',
           size: 'xl',
-        })} !bg-primary-600 !w-10 !h-10 !mr-4 !p-0 !rounded-3xl hover:!bg-primary-800`}
+        })} !bg-primary-600 !w-10 !h-10 !mr-0 !p-0 !rounded-3xl hover:!bg-primary-800`}
       >
         <Plus />
       </button>

@@ -3,13 +3,26 @@ import TransactionList from './TransactionList';
 import { TransactionWithCategory } from '@/types/transaction';
 import NewTransaction from './NewTransaction';
 import { TransactionCategory } from '@prisma/client';
-import { getTransactions } from '@/lib/actions';
+import { getTransactionCount, getTransactions } from '@/lib/actions';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardFooter,
+} from '@/components/ui/card';
+import { PaginationWithLinks } from '@/components/ui/pagination-with-links';
+
+const TRANSACTION_ITEMS_PER_PAGE = 7;
 
 const Transactions = async ({
   categories,
+  page,
 }: {
   categories: TransactionCategory[];
+  page: number;
 }) => {
+  const transactionCount = await getTransactionCount();
+
   const transactions = (
     await getTransactions({
       include: {
@@ -18,6 +31,11 @@ const Transactions = async ({
             icon: true,
           },
         },
+      },
+      skip: (page - 1) * TRANSACTION_ITEMS_PER_PAGE,
+      take: TRANSACTION_ITEMS_PER_PAGE,
+      orderBy: {
+        timestamp: 'desc',
       },
     })
   ).map((transaction) => ({
@@ -28,13 +46,25 @@ const Transactions = async ({
   console.log(transactions);
 
   return (
-    <div className="w-full py-2">
-      <div className="flex items-center justify-between">
-        <h2 className="font-bold text-3xl">Transactions</h2>
-        <NewTransaction categories={categories} />
-      </div>
-      <TransactionList transactions={transactions} categories={categories} />
-    </div>
+    <Card className="w-full py-4 gap-4">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <h2 className="font-bold text-3xl">Transactions</h2>
+          <NewTransaction categories={categories} />
+        </div>
+      </CardHeader>
+      <CardContent>
+        <TransactionList transactions={transactions} categories={categories} />
+      </CardContent>
+      <CardFooter>
+        <PaginationWithLinks
+          page={page}
+          totalCount={transactionCount}
+          pageSize={TRANSACTION_ITEMS_PER_PAGE}
+          pageSearchParam="transactionPage"
+        />
+      </CardFooter>
+    </Card>
   );
 };
 

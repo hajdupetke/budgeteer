@@ -190,12 +190,22 @@ export const getTransactions = async (dbOptions = {}) => {
 
   if (!session?.user) throw new Error('User is not logged in!');
 
-  const transactions = db.transaction.findMany({
+  const transactions = await db.transaction.findMany({
     where: { userId: session.user.id },
     ...dbOptions,
   });
 
   return transactions;
+};
+
+export const getTransactionCount = async () => {
+  const session = await auth();
+
+  if (!session?.user) throw new Error('User is not logged in!');
+
+  const count = await db.transaction.count();
+
+  return count;
 };
 
 /* Get Expenses by category */
