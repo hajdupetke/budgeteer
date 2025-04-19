@@ -1,4 +1,5 @@
 import '@/app/globals.css';
+import React from 'react';
 import { Metadata } from 'next';
 import { Toaster } from '@/components/ui/sonner';
 import { Nunito_Sans } from 'next/font/google';
@@ -24,7 +25,9 @@ export default async function AuthenticatedLayout({
         <AnimatedSidebar>
           <SidebarNav />
         </AnimatedSidebar>
-        <div className="w-full h-full p-4">{children}</div>
+        <div className="flex h-full w-full gap-2 md:gap-4 flex-wrap overflow-auto p-4 flex-col">
+          {children}
+        </div>
         <Toaster />
       </body>
     </html>

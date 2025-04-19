@@ -6,6 +6,7 @@ import {
   getBudgets,
 } from '@/lib/actions';
 import { PrismaBudgetWithCategory, BudgetWithCategory } from '@/types/budget';
+import { BudgetCharts } from './BudgetCharts';
 
 export const Reports = async ({
   transactions,
@@ -77,13 +78,21 @@ export const Reports = async ({
   console.log(budgetWithAmount);
 
   return (
-    <div>
+    <div className="grid grid-cols-2 grid-rows-min gap-3 ">
       <ExpensesByCategory
         transactions={transactions}
         startDate={startDate ? new Date(startDate).toLocaleDateString() : ''}
         endDate={endDate ? new Date(endDate).toLocaleDateString() : ''}
         chartData={categoryExpenseChartData}
       />
+      <BudgetCharts chartData={budgetWithAmount} />
+      <ExpensesByCategory
+        transactions={transactions}
+        startDate={startDate ? new Date(startDate).toLocaleDateString() : ''}
+        endDate={endDate ? new Date(endDate).toLocaleDateString() : ''}
+        chartData={categoryExpenseChartData}
+      />
+      <BudgetCharts chartData={budgetWithAmount} />
     </div>
   );
 };

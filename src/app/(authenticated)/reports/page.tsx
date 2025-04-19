@@ -55,8 +55,8 @@ export default async function TransactionsPage({
   const transactions = await getTransactions(startDate, endDate);
 
   return (
-    <div className="flex h-full w-full gap-2 md:gap-4 flex-col flex-wrap md:flex-nowrap overflow-auto">
-      <div className="flex flex-row items-center gap-4">
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-row items-center gap-4 w-full">
         <h2 className="font-bold text-3xl">Financial reports</h2>
         <DateRangePicker />
       </div>
