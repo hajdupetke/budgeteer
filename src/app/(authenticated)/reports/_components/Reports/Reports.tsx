@@ -12,10 +12,8 @@ import { IncomeExpenseChart } from '@/components/ui/charts/IncomeExpenseChart';
 import { Prisma } from '@prisma/client';
 
 export const Reports = async ({
-  transactions,
   date,
 }: {
-  transactions: ReportTransactions[];
   date: {
     startDate: string;
     endDate: string;

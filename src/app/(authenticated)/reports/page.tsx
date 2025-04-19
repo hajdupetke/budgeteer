@@ -4,43 +4,13 @@ import { auth } from '@/lib/auth';
 import { DateRangePicker } from './_components/daterange-picker';
 import { Reports } from './_components/Reports/Reports';
 import { ReportTransactions } from '@/types/transaction';
+import { getTransactionCount } from '@/lib/actions';
 
 export const metadata: Metadata = {
   title: 'Reports',
 };
 
-const getTransactions = async (
-  startDate: string,
-  endDate: string
-): Promise<ReportTransactions[]> => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User not logged in');
-
-  const transactions =
-    startDate && endDate
-      ? await db.transaction.findMany({
-          where: {
-            timestamp: {
-              lte: new Date(endDate),
-              gte: new Date(startDate),
-            },
-          },
-          include: {
-            category: true,
-          },
-        })
-      : await db.transaction.findMany({ include: { category: true } });
-
-  const serializedTransactions = transactions.map((transaction) => ({
-    ...transaction,
-    amount: transaction.amount.toNumber(), // Convert Decimal to number
-  }));
-
-  return serializedTransactions;
-};
-
-export default async function TransactionsPage({
+export default async function ReportsPage({
   params,
   searchParams,
 }: {
@@ -52,7 +22,14 @@ export default async function TransactionsPage({
 }) {
   const { startDate, endDate } = await searchParams;
 
-  const transactions = await getTransactions(startDate, endDate);
+  const transactions =
+    startDate && endDate
+      ? await getTransactionCount({
+          where: {
+            timestamp: { lte: new Date(endDate), gte: new Date(startDate) },
+          },
+        })
+      : await getTransactionCount();
 
   return (
     <div className="flex flex-col gap-2">
@@ -60,8 +37,8 @@ export default async function TransactionsPage({
         <h2 className="font-bold text-3xl">Financial reports</h2>
         <DateRangePicker />
       </div>
-      {transactions.length > 0 ? (
-        <Reports transactions={transactions} date={searchParams} />
+      {transactions > 0 ? (
+        <Reports date={searchParams} />
       ) : (
         <div className="size-full flex items-center justify-center">
           <h1 className="text-xl">
