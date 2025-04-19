@@ -350,3 +350,27 @@ export const updateBudget = async (formData: FormData, budgetId: number) => {
   revalidatePath('/budgets');
   return { success: true };
 };
+
+export const getExpenseVsIncome = async (
+  step: string,
+  startDate?: string,
+  endDate?: string
+) => {
+  const session = await auth();
+
+  if (!session?.user) throw new Error('User not logged in');
+
+  const result = await db.$queryRaw`
+      SELECT 
+        DATE_TRUNC(${step}, "timestamp") as period, 
+        SUM(CASE WHEN "type" = 'EXPENSE' THEN "amount" ELSE 0 END) as totalExpense,
+        SUM(CASE WHEN "type" = 'INCOME' THEN "amount" ELSE 0 END) as totalIncome
+      FROM "Transaction" 
+      WHERE "userId" = ${session.user.id} 
+      AND (DATE(${startDate})::timestamp IS NULL OR "timestamp" >= DATE(${startDate}))
+      AND (DATE(${endDate})::timestamp IS NULL OR "timestamp" <= DATE(${endDate}))
+      GROUP BY period  
+    `;
+
+  return result;
+};

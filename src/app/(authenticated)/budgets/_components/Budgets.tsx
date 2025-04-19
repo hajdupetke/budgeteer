@@ -8,7 +8,6 @@ import {
   getBudgets,
   getExpensesByCategory,
 } from '@/lib/actions';
-import { BudgetCharts } from '../../reports/_components/Reports/BudgetCharts';
 
 const Budgets = async () => {
   const categories = (

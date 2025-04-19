@@ -26,9 +26,9 @@ export function BudgetCharts({
   chartData: { name: string; max: number; amount: number }[];
 }) {
   return (
-    <Card className="size-full">
+    <Card className="size-full py-4">
       <CardHeader>
-        <CardTitle>Bar Chart - Stacked + Legend</CardTitle>
+        <CardTitle>Budgets</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
@@ -48,13 +48,13 @@ export function BudgetCharts({
               dataKey="amount"
               stackId="a"
               fill="var(--color-primary-700)"
-              radius={[0, 0, 0, 0]}
+              radius={0}
             />
             <Bar
               dataKey="max"
               stackId="a"
               fill="var(--color-primary-200)"
-              radius={[0, 0, 0, 0]}
+              radius={0}
             />
           </BarChart>
         </ChartContainer>

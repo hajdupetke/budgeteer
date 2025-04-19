@@ -20,14 +20,8 @@ import { ReportTransactions } from '@/types/transaction';
 import { CategoryChartData } from '@/types/reports';
 
 export function ExpensesByCategory({
-  transactions,
-  startDate,
-  endDate,
   chartData,
 }: {
-  transactions: ReportTransactions[];
-  startDate: string;
-  endDate: string;
   chartData: CategoryChartData[];
 }) {
   let chartConfig = chartData.reduce((acc, item, index) => {
@@ -47,17 +41,14 @@ export function ExpensesByCategory({
   console.log(chartData);
 
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col size-full py-4">
       <CardHeader className="items-center pb-0">
         <CardTitle>Expenses by category</CardTitle>
-        <CardDescription>
-          {startDate} - {endDate}
-        </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer
           config={chartConfig}
-          className="mx-auto aspect-square max-h-[250px]"
+          className="mx-auto aspect-square max-h-[275px]"
         >
           <PieChart>
             <ChartTooltip

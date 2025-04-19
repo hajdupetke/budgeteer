@@ -1,12 +1,15 @@
 import { ReportTransactions } from '@/types/transaction';
-import { ExpensesByCategory } from './ExpensesByCategory';
+import { ExpensesByCategory } from '@/components/ui/charts/ExpensesByCategory';
 import {
   getCategories,
   getExpensesByCategory,
   getBudgets,
+  getExpenseVsIncome,
 } from '@/lib/actions';
 import { PrismaBudgetWithCategory, BudgetWithCategory } from '@/types/budget';
-import { BudgetCharts } from './BudgetCharts';
+import { BudgetCharts } from '@/components/ui/charts/BudgetCharts';
+import { IncomeExpenseChart } from '@/components/ui/charts/IncomeExpenseChart';
+import { Prisma } from '@prisma/client';
 
 export const Reports = async ({
   transactions,
@@ -75,24 +78,33 @@ export const Reports = async ({
       .reduce((acc, curr) => acc + curr, 0),
   }));
 
-  console.log(budgetWithAmount);
+  const incomeExpenseResponse = (await getExpenseVsIncome(
+    'week',
+    startDate,
+    endDate
+  )) as {
+    period: 'string';
+    totalincome: Prisma.Decimal;
+    totalexpense: Prisma.Decimal;
+  }[];
+
+  const incomeExpenseData = await incomeExpenseResponse.map((item) => ({
+    period: new Date(item.period).toLocaleString(),
+    totalIncome: item.totalincome.toNumber(),
+    totalExpense: item.totalexpense.toNumber(),
+  }));
+
+  console.log(categoryExpenseChartData, budgetWithAmount, incomeExpenseData);
 
   return (
-    <div className="grid grid-cols-2 grid-rows-min gap-3 ">
-      <ExpensesByCategory
-        transactions={transactions}
-        startDate={startDate ? new Date(startDate).toLocaleDateString() : ''}
-        endDate={endDate ? new Date(endDate).toLocaleDateString() : ''}
-        chartData={categoryExpenseChartData}
-      />
-      <BudgetCharts chartData={budgetWithAmount} />
-      <ExpensesByCategory
-        transactions={transactions}
-        startDate={startDate ? new Date(startDate).toLocaleDateString() : ''}
-        endDate={endDate ? new Date(endDate).toLocaleDateString() : ''}
-        chartData={categoryExpenseChartData}
-      />
-      <BudgetCharts chartData={budgetWithAmount} />
+    <div className="flex gap-3 h-full w-full flex-col items-center">
+      <div className="grid grid-cols-2 gap-3 w-full">
+        <ExpensesByCategory chartData={categoryExpenseChartData} />
+        <BudgetCharts chartData={budgetWithAmount} />
+      </div>
+      <div className="w-3/4">
+        <IncomeExpenseChart chartData={incomeExpenseData} />
+      </div>
     </div>
   );
 };
