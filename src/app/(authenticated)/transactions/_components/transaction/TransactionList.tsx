@@ -82,19 +82,17 @@ const TransactionList = ({
         </div>
       ))}
 
-      {editOpen && (
-        <EditTransaction
-          transaction={selected}
-          setOpen={(bool) => setEditOpen(bool)}
-          categories={categories}
-        />
-      )}
-      {deleteOpen && (
-        <DeleteTransaction
-          transaction={selected}
-          setOpen={(bool) => setDeleteOpen(bool)}
-        />
-      )}
+      <EditTransaction
+        transaction={selected}
+        open={editOpen}
+        setOpen={(bool) => setEditOpen(bool)}
+        categories={categories}
+      />
+      <DeleteTransaction
+        transaction={selected}
+        open={deleteOpen}
+        setOpen={(bool) => setDeleteOpen(bool)}
+      />
     </>
   );
 };

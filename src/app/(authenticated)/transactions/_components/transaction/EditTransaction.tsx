@@ -1,46 +1,36 @@
-import TransactionForm from './TransactionForm';
-import { X } from 'lucide-react';
-import { TransactionCategory, Transaction } from '@prisma/client';
+import EditTransactionForm from './EditTransactionForm';
+import { TransactionCategory } from '@prisma/client';
 import { TransactionWithCategory } from '@/types/transaction';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 
 const EditTransaction = ({
   transaction,
   categories,
+  open,
   setOpen,
 }: {
   transaction: TransactionWithCategory;
   categories: TransactionCategory[];
+  open: boolean;
   setOpen: (bool: boolean) => void;
 }) => {
   return (
-    <div
-      className="bg-gray-200/30 w-screen h-screen absolute backdrop-blur-xs top-0 left-0 z-50 flex items-center justify-center"
-      onClick={(e) => {
-        if ((e.target as Element).id == 'overlay') {
-          setOpen(false);
-        }
-      }}
-      id="overlay"
-    >
-      <div
-        className="w-3/4 md:w-1/2 lg:w-1/3 bg-white p-4 relative rounded-xl drop-shadow-xl"
-        id="popup-window"
-      >
-        <h3 className="text-2xl font-bold">Edit transaction</h3>
-        <X
-          className="absolute right-4 top-4 cursor-pointer"
-          onClick={() => setOpen(false)}
-        />
-
-        <TransactionForm
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent>
+        <DialogTitle className="text-2xl font-bold">
+          Create a new budget
+        </DialogTitle>
+        <EditTransactionForm
+          categories={categories}
+          transaction={transaction}
           onSuccess={() => {
             setOpen(false);
+            toast.success('Budget successfully edited!');
           }}
-          categories={categories}
-          transaction={{ ...transaction, amount: String(transaction.amount) }}
         />
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

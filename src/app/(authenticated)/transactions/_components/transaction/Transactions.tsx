@@ -22,6 +22,7 @@ const Transactions = async ({
   page: number;
 }) => {
   const transactionCount = await getTransactionCount();
+  page = isNaN(page) ? 1 : page;
 
   const transactions = (
     await getTransactions({
