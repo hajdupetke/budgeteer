@@ -36,6 +36,16 @@ export const createTransactionCategory = async (formData: FormData) => {
   return { success: true };
 };
 
+export const getCategoryCount = async () => {
+  const session = await auth();
+
+  // return false if user not logged in
+  if (!session?.user) throw new Error('User not logged in!');
+
+  const count = await db.transactionCategory.count();
+  return count;
+};
+
 /* Update TransactionCategory by id */
 
 export const updateTransactionCategory = async (

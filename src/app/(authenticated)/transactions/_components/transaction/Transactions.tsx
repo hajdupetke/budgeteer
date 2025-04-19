@@ -3,7 +3,11 @@ import TransactionList from './TransactionList';
 import { TransactionWithCategory } from '@/types/transaction';
 import NewTransaction from './NewTransaction';
 import { TransactionCategory } from '@prisma/client';
-import { getTransactionCount, getTransactions } from '@/lib/actions';
+import {
+  getTransactionCount,
+  getTransactions,
+  getCategories,
+} from '@/lib/actions';
 import {
   Card,
   CardContent,
@@ -14,15 +18,10 @@ import { PaginationWithLinks } from '@/components/ui/pagination-with-links';
 
 const TRANSACTION_ITEMS_PER_PAGE = 7;
 
-const Transactions = async ({
-  categories,
-  page,
-}: {
-  categories: TransactionCategory[];
-  page: number;
-}) => {
+const Transactions = async ({ page }: { page: number }) => {
   const transactionCount = await getTransactionCount();
-  page = isNaN(page) ? 1 : page;
+
+  const categories = await getCategories();
 
   const transactions = (
     await getTransactions({

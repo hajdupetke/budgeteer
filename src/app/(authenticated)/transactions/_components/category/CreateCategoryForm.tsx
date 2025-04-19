@@ -1,12 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import { PreviewConfig } from 'emoji-picker-react/dist/config/config';
-import {
-  createTransactionCategory,
-  updateTransactionCategory,
-} from '@/lib/actions';
+import { createTransactionCategory } from '@/lib/actions';
 import { TransactionCategorySchema } from '@/lib/validation';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -24,16 +21,13 @@ import { useForm } from 'react-hook-form';
 
 type CategoryFormData = z.infer<typeof TransactionCategorySchema>;
 
-export default function CategoryForm({
-  category,
+export default function CreateCategoryForm({
   onSuccess,
 }: {
-  category?: CategoryFormData;
   onSuccess?: () => void;
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
-  const isEditing = !!category;
 
   // Configuraton object for the preview of the EmojiPicker
   const previewConfig: PreviewConfig = {
@@ -46,17 +40,11 @@ export default function CategoryForm({
   const form = useForm<CategoryFormData>({
     resolver: zodResolver(TransactionCategorySchema),
     defaultValues: {
-      id: category?.id || 0,
-      icon: category?.icon || '',
-      name: category?.name || '',
+      id: 0,
+      icon: '',
+      name: '',
     },
   });
-
-  useEffect(() => {
-    if (category) {
-      form.reset(category);
-    }
-  }, [category, form]);
 
   // Call server action when submitting form
   const onFormSubmit = async (values: CategoryFormData) => {
@@ -64,9 +52,7 @@ export default function CategoryForm({
       const formData = new FormData();
       formData.append('icon', values.icon);
       formData.append('name', values.name);
-      const res = isEditing && category.id
-        ? await updateTransactionCategory(formData, category.id)
-        : await createTransactionCategory(formData);
+      const res = await createTransactionCategory(formData);
 
       // if response is good run onSuccess function
       if (res.success && onSuccess) onSuccess();
@@ -83,7 +69,9 @@ export default function CategoryForm({
           name="icon"
           render={({ field }) => (
             <FormItem className="my-4">
-              <FormLabel className="text-md text-gray-800 font-semibold my-2">Category Icon</FormLabel>
+              <FormLabel className="text-md text-gray-800 font-semibold">
+                Category Icon
+              </FormLabel>
               <FormControl>
                 <div className="relative">
                   <Button
@@ -123,7 +111,9 @@ export default function CategoryForm({
           name="name"
           render={({ field }) => (
             <FormItem className="my-4">
-              <FormLabel className="text-md text-gray-800 font-semibold my-2">Category Name</FormLabel>
+              <FormLabel className="text-md text-gray-800 font-semibold">
+                Category Name
+              </FormLabel>
               <FormControl>
                 <Input
                   placeholder="Enter category name"
@@ -141,9 +131,7 @@ export default function CategoryForm({
           disabled={isSubmitting}
           className="w-full rounded text-lg py-6 bg-primary-600 hover:bg-primary-700 box-shadow-md shadow-gray-600"
         >
-          {isSubmitting
-            ? 'Saving...'
-            : (isEditing ? 'Edit' : 'Create') + ' Category'}
+          {isSubmitting ? 'Saving...' : 'Create Category'}
         </Button>
       </form>
     </Form>

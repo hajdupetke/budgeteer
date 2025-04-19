@@ -26,7 +26,7 @@ const EditTransaction = ({
           transaction={transaction}
           onSuccess={() => {
             setOpen(false);
-            toast.success('Budget successfully edited!');
+            toast.success('Transaction successfully edited!');
           }}
         />
       </DialogContent>

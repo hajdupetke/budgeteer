@@ -1,7 +1,6 @@
 import { Metadata } from 'next';
 import Transactions from './_components/transaction/Transactions';
 import Categories from './_components/category/Categories';
-import { getCategories } from '@/lib/actions';
 
 export const metadata: Metadata = {
   title: 'Transactions',
@@ -12,20 +11,21 @@ export default async function TransactionsPage({
 }: {
   searchParams: {
     transactionPage: string;
-    categoryPage: number;
+    categoryPage: string;
   };
 }) {
   const { transactionPage, categoryPage } = await searchParams;
-  const categories = await getCategories();
-  console.log(transactionPage, categoryPage);
 
   return (
-    <div className="flex h-full w-full gap-2 md:gap-4 flex-wrap md:flex-nowrap overflow-auto">
+    <div className="flex h-full w-full gap-2 md:gap-4 flex-wrap lg:flex-nowrap overflow-auto">
       <Transactions
-        categories={categories}
-        page={Number.parseInt(transactionPage)}
+        page={
+          transactionPage != undefined ? Number.parseInt(transactionPage) : 1
+        }
       />
-      <Categories categories={categories} />
+      <Categories
+        page={categoryPage != undefined ? Number.parseInt(categoryPage) : 1}
+      />
     </div>
   );
 }
