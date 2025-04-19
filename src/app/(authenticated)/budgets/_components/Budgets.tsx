@@ -8,7 +8,7 @@ import {
   getBudgets,
   getExpensesByCategory,
 } from '@/lib/actions';
-import { BudgetCharts } from './BudgetCharts';
+import { BudgetCharts } from '../../reports/_components/Reports/BudgetCharts';
 
 const Budgets = async () => {
   const categories = (
@@ -41,27 +41,6 @@ const Budgets = async () => {
     new Date().toLocaleString()
   );
 
-  /* 
-    Maps over all of the user's budgets and then finds the corresponding categories expenses' and sums it all up
-  */
-  const budgetWithAmount = budgets.map((budget) => ({
-    name: budget.name,
-    max: budget.max,
-    amount: budget.categoryIds
-      .map((id) => {
-        const categoryExpense = expensesByCategory.find(
-          (cat) => cat.categoryId === id
-        );
-
-        return categoryExpense?._sum.amount
-          ? categoryExpense._sum.amount.toNumber()
-          : 0;
-      })
-      .reduce((acc, curr) => acc + curr, 0),
-  }));
-
-  console.log(budgetWithAmount);
-
   return (
     <div className="w-full">
       <div className="flex items-center justify-between">
@@ -70,7 +49,6 @@ const Budgets = async () => {
       </div>
       <div className="flex flex-wrap lg:flex-nowrap gap-2 lg:gap-4 items-center justify-center flex-row">
         <BudgetList budgets={budgets} categories={categories} />
-        <BudgetCharts chartData={budgetWithAmount} />
       </div>
     </div>
   );
