@@ -26,7 +26,7 @@ const TransactionList = ({
       <div className="grid grid-cols-4 items-center justify-between py-4">
         <p className="font-semibold text-gray-500 text-center">Name</p>
         <p className="font-semibold text-gray-500 text-center">Amount</p>
-        <p className="font-semibold text-gray-500 text-center">Timestamp</p>
+        <p className="font-semibold text-gray-500 text-center">Date</p>
         <p className="basis-2/6 text-center font-semibold text-gray-500">
           Actions
         </p>
@@ -53,8 +53,7 @@ const TransactionList = ({
               year: 'numeric',
               month: '2-digit',
               day: '2-digit',
-              hour: '2-digit',
-              minute: '2-digit',
+
               hour12: false,
             })}
           </p>

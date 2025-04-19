@@ -17,7 +17,7 @@ export default async function TransactionsPage({
   const { transactionPage, categoryPage } = await searchParams;
 
   return (
-    <div className="flex gap-2 flex-wrap xl:flex-nowrap w-full">
+    <div className="flex gap-2 flex-wrap xl:flex-nowrap size-full">
       <Transactions
         page={
           transactionPage != undefined ? Number.parseInt(transactionPage) : 1

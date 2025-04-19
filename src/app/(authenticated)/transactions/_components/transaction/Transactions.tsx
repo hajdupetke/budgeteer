@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/card';
 import { PaginationWithLinks } from '@/components/ui/pagination-with-links';
 
-const TRANSACTION_ITEMS_PER_PAGE = 7;
+const TRANSACTION_ITEMS_PER_PAGE = 8;
 
 const Transactions = async ({ page }: { page: number }) => {
   const transactionCount = await getTransactionCount();
@@ -46,7 +46,7 @@ const Transactions = async ({ page }: { page: number }) => {
   console.log(transactions);
 
   return (
-    <Card className="w-full py-4 gap-4">
+    <Card className="size-full py-4 gap-4">
       <CardHeader>
         <div className="flex items-center justify-between">
           <h2 className="font-bold text-3xl">Transactions</h2>
