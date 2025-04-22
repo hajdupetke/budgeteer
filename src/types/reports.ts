@@ -1,3 +1,5 @@
+import { Prisma } from '@prisma/client';
+
 export type CategoryChartConfig = {
   category: {
     label: string;
@@ -14,3 +16,10 @@ export type CategoryChartData = {
   sum: number;
   //fill: string;
 };
+
+export type PrismaExpensesByCategory = Prisma.GetTransactionGroupByPayload<{
+  by: ['categoryId'];
+  _sum: {
+    amount: true;
+  };
+}>;

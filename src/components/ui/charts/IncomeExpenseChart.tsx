@@ -22,7 +22,11 @@ const chartConfig = {
 export function IncomeExpenseChart({
   chartData,
 }: {
-  chartData: { period: string; totalIncome: number; totalExpense: number }[];
+  chartData: {
+    period: string | undefined;
+    totalIncome: number | undefined;
+    totalExpense: number | undefined;
+  }[];
 }) {
   console.log(chartData);
   return (

@@ -5,6 +5,7 @@ import {
   getExpensesByCategory,
   getBudgets,
   getExpenseVsIncome,
+  getBudgetWithAmount,
 } from '@/lib/actions';
 import { PrismaBudgetWithCategory, BudgetWithCategory } from '@/types/budget';
 import { BudgetCharts } from '@/components/ui/charts/BudgetCharts';
@@ -28,16 +29,6 @@ export const Reports = async ({
     },
   });
 
-  const fetchedBudgets = (await getBudgets({
-    include: { categories: { select: { name: true, id: true } } },
-  })) as PrismaBudgetWithCategory[];
-
-  const budgets = fetchedBudgets.map((budget) => ({
-    ...budget,
-    max: budget.max.toNumber(),
-    categoryIds: budget.categories.map((category) => category.id),
-  })) as BudgetWithCategory[];
-
   const expensesByCategory = await getExpensesByCategory(startDate, endDate);
 
   const categoryExpenseChartData = expensesByCategory.map(
@@ -57,42 +48,13 @@ export const Reports = async ({
     }
   );
 
-  /* 
-    Maps over all of the user's budgets and then finds the corresponding categories expenses' and sums it all up
-  */
-  const budgetWithAmount = budgets.map((budget) => ({
-    name: budget.name,
-    max: budget.max,
-    amount: budget.categoryIds
-      .map((id) => {
-        const categoryExpense = expensesByCategory.find(
-          (cat) => cat.categoryId === id
-        );
+  const budgetWithAmount = await getBudgetWithAmount(expensesByCategory);
 
-        return categoryExpense?._sum.amount
-          ? categoryExpense._sum.amount.toNumber()
-          : 0;
-      })
-      .reduce((acc, curr) => acc + curr, 0),
-  }));
-
-  const incomeExpenseResponse = (await getExpenseVsIncome(
+  const incomeExpenseResponse = await getExpenseVsIncome(
     'week',
     startDate,
     endDate
-  )) as {
-    period: 'string';
-    totalincome: Prisma.Decimal;
-    totalexpense: Prisma.Decimal;
-  }[];
-
-  const incomeExpenseData = await incomeExpenseResponse.map((item) => ({
-    period: new Date(item.period).toLocaleString(),
-    totalIncome: item.totalincome.toNumber(),
-    totalExpense: item.totalexpense.toNumber(),
-  }));
-
-  console.log(categoryExpenseChartData, budgetWithAmount, incomeExpenseData);
+  );
 
   return (
     <div className="flex gap-3 h-full w-full flex-col items-center">
@@ -101,7 +63,7 @@ export const Reports = async ({
         <BudgetCharts chartData={budgetWithAmount} />
       </div>
       <div className="w-3/4">
-        <IncomeExpenseChart chartData={incomeExpenseData} />
+        <IncomeExpenseChart chartData={incomeExpenseResponse} />
       </div>
     </div>
   );

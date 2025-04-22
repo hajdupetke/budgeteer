@@ -6,6 +6,8 @@ import { revalidatePath } from 'next/cache';
 import { auth } from './auth';
 import { Prisma } from '@prisma/client';
 import { TransactionType } from '@prisma/client';
+import { incomeExpense } from '@prisma/client/sql';
+import { PrismaBudgetWithCategory } from '@/types/budget';
 
 export const logOut = async () => {
   await signOut();
@@ -208,50 +210,14 @@ export const getTransactions = async (dbOptions = {}) => {
   return transactions;
 };
 
-export const getTransactionCount = async () => {
+export const getTransactionCount = async (dbOptions = {}) => {
   const session = await auth();
 
   if (!session?.user) throw new Error('User is not logged in!');
 
-  const count = await db.transaction.count();
+  const count = await db.transaction.count(dbOptions);
 
   return count;
-};
-
-/* Get Expenses by category */
-
-export const getExpensesByCategory = async (
-  startDate: string,
-  endDate: string
-) => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User not logged in');
-
-  const expensesByCategory =
-    startDate && endDate
-      ? await db.transaction.groupBy({
-          by: ['categoryId'],
-          _sum: {
-            amount: true,
-          },
-          where: {
-            timestamp: {
-              lte: new Date(endDate),
-              gte: new Date(startDate),
-            },
-            type: TransactionType.EXPENSE,
-            userId: session.user.id,
-          },
-        })
-      : await db.transaction.groupBy({
-          by: ['categoryId'],
-          _sum: {
-            amount: true,
-          },
-          where: { type: TransactionType.EXPENSE, userId: session.user.id },
-        });
-  return expensesByCategory;
 };
 
 /* Create new Budget */
@@ -351,6 +317,8 @@ export const updateBudget = async (formData: FormData, budgetId: number) => {
   return { success: true };
 };
 
+/* Report functions */
+
 export const getExpenseVsIncome = async (
   step: string,
   startDate?: string,
@@ -360,17 +328,147 @@ export const getExpenseVsIncome = async (
 
   if (!session?.user) throw new Error('User not logged in');
 
-  const result = await db.$queryRaw`
-      SELECT 
-        DATE_TRUNC(${step}, "timestamp") as period, 
-        SUM(CASE WHEN "type" = 'EXPENSE' THEN "amount" ELSE 0 END) as totalExpense,
-        SUM(CASE WHEN "type" = 'INCOME' THEN "amount" ELSE 0 END) as totalIncome
-      FROM "Transaction" 
-      WHERE "userId" = ${session.user.id} 
-      AND (DATE(${startDate})::timestamp IS NULL OR "timestamp" >= DATE(${startDate}))
-      AND (DATE(${endDate})::timestamp IS NULL OR "timestamp" <= DATE(${endDate}))
-      GROUP BY period  
-    `;
+  const queryResult = await db.$queryRawTyped(
+    incomeExpense(
+      step,
+      startDate ?? '',
+      endDate ?? '',
+      session.user.id as string
+    )
+  );
+
+  const result = queryResult.map((res) => ({
+    period: res.period?.toLocaleString(),
+    totalExpense: res.totalexpense?.toNumber(),
+    totalIncome: res.totalincome?.toNumber(),
+  }));
 
   return result;
+};
+
+export const getIncome = async (startDate: Date, endDate: Date) => {
+  const session = await auth();
+
+  if (!session?.user) throw new Error('User not logged in');
+
+  const income =
+    startDate && endDate
+      ? await db.transaction.aggregate({
+          _sum: {
+            amount: true,
+          },
+          where: {
+            type: TransactionType.INCOME,
+            userId: session.user.id,
+            timestamp: {
+              lte: endDate,
+              gte: startDate,
+            },
+          },
+        })
+      : await db.transaction.aggregate({
+          _sum: {
+            amount: true,
+          },
+          where: { type: TransactionType.INCOME, userId: session.user.id },
+        });
+  return income;
+};
+
+export const getExpense = async (startDate: Date, endDate: Date) => {
+  const session = await auth();
+
+  if (!session?.user) throw new Error('User not logged in');
+
+  const expense =
+    startDate && endDate
+      ? await db.transaction.aggregate({
+          _sum: {
+            amount: true,
+          },
+          where: {
+            type: TransactionType.EXPENSE,
+            userId: session.user.id,
+            timestamp: {
+              lte: endDate,
+              gte: startDate,
+            },
+          },
+        })
+      : await db.transaction.aggregate({
+          _sum: {
+            amount: true,
+          },
+          where: { type: TransactionType.EXPENSE, userId: session.user.id },
+        });
+  return expense;
+};
+
+export const getBudgetWithAmount = async (expensesByCategory: any) => {
+  const budgets = (
+    (await getBudgets({
+      include: { categories: { select: { name: true, id: true } } },
+    })) as PrismaBudgetWithCategory[]
+  ).map((budget) => ({
+    ...budget,
+    max: budget.max.toNumber(),
+    categoryIds: budget.categories.map((category) => category.id),
+  }));
+
+  /* 
+      Maps over all of the user's budgets and then finds the corresponding categories expenses' and sums it all up
+    */
+  const budgetWithAmount = budgets.map((budget) => ({
+    name: budget.name,
+    max: budget.max,
+    amount: budget.categoryIds
+      .map((id) => {
+        const categoryExpense = expensesByCategory.find(
+          (cat: any) => cat.categoryId === id
+        );
+
+        return categoryExpense?._sum.amount
+          ? categoryExpense._sum.amount.toNumber()
+          : 0;
+      })
+      .reduce((acc, curr) => acc + curr, 0),
+  }));
+
+  return budgetWithAmount;
+};
+
+/* Get Expenses by category */
+
+export const getExpensesByCategory = async (
+  startDate: string,
+  endDate: string
+) => {
+  const session = await auth();
+
+  if (!session?.user) throw new Error('User not logged in');
+
+  const expensesByCategory =
+    startDate && endDate
+      ? await db.transaction.groupBy({
+          by: ['categoryId'],
+          _sum: {
+            amount: true,
+          },
+          where: {
+            timestamp: {
+              lte: new Date(endDate),
+              gte: new Date(startDate),
+            },
+            type: TransactionType.EXPENSE,
+            userId: session.user.id,
+          },
+        })
+      : await db.transaction.groupBy({
+          by: ['categoryId'],
+          _sum: {
+            amount: true,
+          },
+          where: { type: TransactionType.EXPENSE, userId: session.user.id },
+        });
+  return expensesByCategory;
 };
