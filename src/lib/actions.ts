@@ -331,8 +331,8 @@ export const getExpenseVsIncome = async (
   const queryResult = await db.$queryRawTyped(
     incomeExpense(
       step,
-      startDate ?? '',
-      endDate ?? '',
+      startDate ?? '1000-01-01',
+      endDate ?? new Date().toISOString(),
       session.user.id as string
     )
   );
