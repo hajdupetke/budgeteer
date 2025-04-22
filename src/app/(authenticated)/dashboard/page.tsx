@@ -2,20 +2,19 @@ import {
   getExpense,
   getIncome,
   getCategories,
-  getBudgets,
   getExpensesByCategory,
   getExpenseVsIncome,
   getBudgetWithAmount,
+  getTransactionCount,
 } from '@/lib/actions';
 import { auth } from '@/lib/auth';
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { Prisma } from '@prisma/client';
-import { PrismaBudgetWithCategory, BudgetWithCategory } from '@/types/budget';
 import { ExpensesByCategory } from '@/components/ui/charts/ExpensesByCategory';
 import { BudgetCharts } from '@/components/ui/charts/BudgetCharts';
 import { IncomeExpenseChart } from '@/components/ui/charts/IncomeExpenseChart';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
+import { TrendingDown, TrendingUp } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -26,12 +25,30 @@ export default async function Dashboard() {
 
   if (!session?.user) redirect('/sign-in');
 
+  const transactionCount = await getTransactionCount();
+
+  if (transactionCount <= 0) {
+    return (
+      <div>
+        You haven't added provided any data yet. When you the breakdown of your
+        last month will appear here.
+      </div>
+    );
+  }
+
   const oneMonthAgo = new Date();
   oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
   const now = new Date();
 
   const income = await getIncome(oneMonthAgo, now);
   const expense = await getExpense(oneMonthAgo, now);
+
+  const twoMonthsAgo = new Date(oneMonthAgo);
+  twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 1);
+
+  const previousIncome = await getIncome(twoMonthsAgo, oneMonthAgo);
+  const previousExpense = await getExpense(twoMonthsAgo, oneMonthAgo);
+  console.log(previousExpense, previousIncome);
 
   const categories = await getCategories({
     select: {
@@ -80,10 +97,70 @@ export default async function Dashboard() {
       <div className="grid grid-cols-2 flex-wrap gap-3">
         <div className="h-full flex flex-col gap-3">
           <Card className="h-full">
-            <CardContent>{income._sum.amount?.toNumber()}</CardContent>
+            <CardContent className="flex flex-col justify-center gap-4 h-full">
+              <CardTitle className="">
+                Your income over the past month
+              </CardTitle>
+              <div className="text-2xl font-extrabold">
+                {income._sum.amount?.toNumber()} EUR
+              </div>
+            </CardContent>
+            {previousIncome._sum.amount && income._sum.amount && (
+              <CardFooter>
+                {previousIncome._sum.amount.toNumber() >=
+                income._sum.amount?.toNumber() ? (
+                  <div className="flex gap-2 items-center text-warning-900">
+                    <TrendingDown /> Your income is down{' '}
+                    {(
+                      previousIncome._sum.amount.toNumber() /
+                      income._sum.amount?.toNumber()
+                    ).toFixed(2)}
+                    % from last month.
+                  </div>
+                ) : (
+                  <div className="flex gap-2 items-center text-success-800">
+                    <TrendingUp /> Your income is up{' '}
+                    {(
+                      previousIncome._sum.amount.toNumber() /
+                      income._sum.amount?.toNumber()
+                    ).toFixed(2)}
+                    % from last month.
+                  </div>
+                )}
+              </CardFooter>
+            )}
           </Card>
-          <Card className="h-full">
-            <CardContent>{expense._sum.amount?.toNumber()}</CardContent>
+          <Card className="h-full justify-between">
+            <CardContent className="flex flex-col justify-center gap-4 h-full">
+              <CardTitle>Your expenses over the past month</CardTitle>
+              <div className="text-2xl font-extrabold">
+                {expense._sum.amount?.toNumber()} EUR
+              </div>
+            </CardContent>
+            {previousExpense._sum.amount && expense._sum.amount && (
+              <CardFooter>
+                {previousExpense._sum.amount.toNumber() >=
+                expense._sum.amount?.toNumber() ? (
+                  <div className="flex gap-2 items-center text-warning-900">
+                    <TrendingDown /> Your expenses are down{' '}
+                    {(
+                      previousExpense._sum.amount.toNumber() /
+                      expense._sum.amount?.toNumber()
+                    ).toFixed(2)}
+                    % from last month.
+                  </div>
+                ) : (
+                  <div className="flex gap-2 items-center text-success-800">
+                    <TrendingUp /> Your expense is up{' '}
+                    {(
+                      previousExpense._sum.amount.toNumber() /
+                      expense._sum.amount?.toNumber()
+                    ).toFixed(2)}
+                    % from last month.
+                  </div>
+                )}
+              </CardFooter>
+            )}
           </Card>
         </div>
         <ExpensesByCategory chartData={categoryExpenseChartData} />
