@@ -48,7 +48,6 @@ export default async function Dashboard() {
 
   const previousIncome = await getIncome(twoMonthsAgo, oneMonthAgo);
   const previousExpense = await getExpense(twoMonthsAgo, oneMonthAgo);
-  console.log(previousExpense, previousIncome);
 
   const categories = await getCategories({
     select: {

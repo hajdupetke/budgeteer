@@ -38,8 +38,6 @@ export function ExpensesByCategory({
     ...chartConfig,
   };
 
-  console.log(chartData);
-
   return (
     <Card className="flex flex-col size-full py-4">
       <CardHeader className="items-center pb-0">

@@ -43,8 +43,6 @@ const Transactions = async ({ page }: { page: number }) => {
     amount: transaction.amount.toNumber(),
   })) as TransactionWithCategory[];
 
-  console.log(transactions);
-
   return (
     <Card className="size-full py-4 gap-4">
       <CardHeader>

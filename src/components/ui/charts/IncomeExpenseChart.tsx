@@ -28,7 +28,6 @@ export function IncomeExpenseChart({
     totalExpense: number | undefined;
   }[];
 }) {
-  console.log(chartData);
   return (
     <Card className="py-4">
       <CardHeader>

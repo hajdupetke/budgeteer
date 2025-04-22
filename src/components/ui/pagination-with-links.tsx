@@ -89,7 +89,6 @@ export function PaginationWithLinks({
 
     if (totalPageCount <= maxVisiblePages) {
       for (let i = 1; i <= totalPageCount; i++) {
-        console.log(page, i);
         items.push(
           <PaginationItem key={i}>
             <PaginationLink
@@ -126,7 +125,6 @@ export function PaginationWithLinks({
       const end = Math.min(totalPageCount - 1, page + 1);
 
       for (let i = start; i <= end; i++) {
-        console.log(page, i);
         items.push(
           <PaginationItem key={i}>
             <PaginationLink

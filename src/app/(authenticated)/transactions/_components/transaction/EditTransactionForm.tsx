@@ -70,7 +70,6 @@ export default function EditTransactionForm({
       formData.append('transactionType', values.type);
       if (values.timestamp)
         formData.append('timestamp', new Date(values.timestamp).toString());
-      console.log(formData);
       const res = await updateTransaction(formData, transaction.id as number);
       // if response is good run onSuccess function
       if (res.success && onSuccess) onSuccess();
