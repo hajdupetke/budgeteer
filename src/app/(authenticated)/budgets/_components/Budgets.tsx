@@ -32,14 +32,6 @@ const Budgets = async () => {
     categoryIds: budget.categories.map((category) => category.id),
   })) as BudgetWithCategory[];
 
-  const date = new Date();
-  date.setMonth(date.getMonth() - 1);
-
-  const expensesByCategory = await getExpensesByCategory(
-    date.toLocaleString(),
-    new Date().toLocaleString()
-  );
-
   return (
     <div className="w-full">
       <div className="flex items-center justify-between">
