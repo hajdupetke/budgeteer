@@ -7,14 +7,21 @@ import { cn } from '@/lib/utils';
 import DeleteBudget from './DeleteBudget';
 import EditBudget from './EditBudget';
 import { MultiSelectOption } from '@/components/ui/multiselect';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { PaginationWithLinks } from '@/components/ui/pagination-with-links';
 
 const BudgetList = ({
   budgets,
   categories,
+  page,
+  budgetCount,
+  pageSize,
 }: {
   budgets: BudgetWithCategory[];
   categories: MultiSelectOption[];
+  page: number;
+  budgetCount: number;
+  pageSize: number;
 }) => {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -48,9 +55,10 @@ const BudgetList = ({
               </p>
               <p className="text-center">{budget.max} EUR</p>
               <p className="text-center">
-                {budget.categories.map((category) => (
+                {budget.categories.slice(0, 3).map((category) => (
                   <span key={category.name}>{category.name} </span>
                 ))}
+                {budget.categories.length > 3 && '...'}
               </p>
               <div className="flex items-center justify-center gap-2">
                 <Button
@@ -76,6 +84,14 @@ const BudgetList = ({
             </div>
           ))}
         </CardContent>
+        <CardFooter>
+          <PaginationWithLinks
+            page={page}
+            totalCount={budgetCount}
+            pageSize={pageSize}
+            pageSearchParam="page"
+          />
+        </CardFooter>
       </Card>
       <DeleteBudget
         open={deleteOpen}

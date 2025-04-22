@@ -7,9 +7,12 @@ import {
   getCategories,
   getBudgets,
   getExpensesByCategory,
+  getBudgetCount,
 } from '@/lib/actions';
 
-const Budgets = async () => {
+const BUDGETS_PER_PAGE = 8;
+
+const Budgets = async ({ page }: { page: number }) => {
   const categories = (
     await getCategories({
       select: {
@@ -24,6 +27,8 @@ const Budgets = async () => {
 
   const fetchedBudgets = (await getBudgets({
     include: { categories: { select: { name: true, id: true } } },
+    skip: (page - 1) * BUDGETS_PER_PAGE,
+    take: BUDGETS_PER_PAGE,
   })) as PrismaBudgetWithCategory[];
 
   const budgets = fetchedBudgets.map((budget) => ({
@@ -32,14 +37,22 @@ const Budgets = async () => {
     categoryIds: budget.categories.map((category) => category.id),
   })) as BudgetWithCategory[];
 
+  const budgetCount = await getBudgetCount();
+
   return (
     <div className="w-full">
       <div className="flex items-center justify-between">
         <h2 className="font-bold text-3xl">Budgets</h2>
         <NewBudget categories={categories} />
       </div>
-      <div className="flex flex-wrap lg:flex-nowrap gap-2 lg:gap-4 items-center justify-center flex-row">
-        <BudgetList budgets={budgets} categories={categories} />
+      <div className="flex flex-wrap lg:flex-nowrap gap-2 lg:gap-4 items-center justify-center flex-row mt-4">
+        <BudgetList
+          budgets={budgets}
+          categories={categories}
+          page={page}
+          budgetCount={budgetCount}
+          pageSize={BUDGETS_PER_PAGE}
+        />
       </div>
     </div>
   );

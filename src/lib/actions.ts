@@ -317,6 +317,16 @@ export const updateBudget = async (formData: FormData, budgetId: number) => {
   return { success: true };
 };
 
+export const getBudgetCount = async () => {
+  const session = await auth();
+
+  if (!session?.user) throw new Error('User not logged in');
+
+  const count = await db.budget.count();
+
+  return count;
+};
+
 /* Report functions */
 
 export const getExpenseVsIncome = async (
