@@ -1,32 +1,42 @@
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 async function main() {
-  const categories = await prisma.transactionCategory.createManyAndReturn({
-    data: [
-      {
-        icon: '💸',
-        name: 'Salary',
-      },
-      {
-        icon: '🏠',
-        name: 'Housing',
-      },
-      {
-        icon: '🍕',
-        name: 'Food',
-      },
-      {
-        icon: '🚎',
-        name: 'Transportation',
-      },
-      {
-        icon: '🍿',
-        name: 'Entertainment',
-      },
-    ],
-  });
+  const categories = [
+    {
+      id: 1,
+      icon: '💸',
+      name: 'Salary',
+    },
+    {
+      id: 2,
+      icon: '🏠',
+      name: 'Housing',
+    },
+    {
+      id: 3,
+      icon: '🍕',
+      name: 'Food',
+    },
+    {
+      id: 4,
+      icon: '🚎',
+      name: 'Transportation',
+    },
+    {
+      id: 5,
+      icon: '🍿',
+      name: 'Entertainment',
+    },
+  ];
 
-  console.log(categories);
+  categories.forEach(async (category) => {
+    const created = await prisma.transactionCategory.upsert({
+      where: { id: category.id },
+      update: {},
+      create: category,
+    });
+    console.log(created);
+  });
 }
 
 main()
