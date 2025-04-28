@@ -12,7 +12,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 
 interface DateRangePickerProps {
-  className?: String;
+  className?: string;
 }
 
 export const DateRangePicker = ({ className }: DateRangePickerProps) => {

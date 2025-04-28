@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { deleteBudget, deleteTransaction } from '@/lib/actions';
+import { deleteBudget } from '@/lib/actions';
 import { BudgetWithCategory } from '@/types/budget';
 import {
   Dialog,

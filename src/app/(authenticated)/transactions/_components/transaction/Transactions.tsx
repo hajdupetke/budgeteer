@@ -2,7 +2,6 @@
 import TransactionList from './TransactionList';
 import { TransactionWithCategory } from '@/types/transaction';
 import NewTransaction from './NewTransaction';
-import { TransactionCategory } from '@prisma/client';
 import {
   getTransactionCount,
   getTransactions,

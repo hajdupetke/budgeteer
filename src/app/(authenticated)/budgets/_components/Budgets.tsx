@@ -3,12 +3,7 @@
 import { BudgetWithCategory, PrismaBudgetWithCategory } from '@/types/budget';
 import BudgetList from './BudgetList';
 import NewBudget from './NewBudget';
-import {
-  getCategories,
-  getBudgets,
-  getExpensesByCategory,
-  getBudgetCount,
-} from '@/lib/actions';
+import { getCategories, getBudgets, getBudgetCount } from '@/lib/actions';
 
 const BUDGETS_PER_PAGE = 8;
 

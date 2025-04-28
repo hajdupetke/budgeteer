@@ -5,8 +5,6 @@ import { useState } from 'react';
 import EditCategory from './EditCategory';
 import DeleteCategory from './DeleteCategory';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
 
 const CategoryList = ({
   categories,
@@ -25,7 +23,7 @@ const CategoryList = ({
           Actions
         </p>
       </div>
-      {categories.map((category, index) => (
+      {categories.map((category) => (
         <div
           key={category.id}
           className="flex items-center justify-between py-4 gap-2 border-t-2 border-gray-100"

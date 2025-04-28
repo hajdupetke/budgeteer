@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createTransaction, updateTransaction } from '@/lib/actions';
+import { updateTransaction } from '@/lib/actions';
 import { TransactionSchema } from '@/lib/validation';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';

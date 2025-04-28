@@ -31,7 +31,7 @@ const TransactionList = ({
           Actions
         </p>
       </div>
-      {transactions.map((transaction, index) => (
+      {transactions.map((transaction) => (
         <div
           key={transaction.id}
           className="grid grid-cols-4  items-center justify-between py-4 border-t-2 border-gray-100"

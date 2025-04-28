@@ -1,9 +1,6 @@
 import { Metadata } from 'next';
-import { db } from '@/lib/db';
-import { auth } from '@/lib/auth';
 import { DateRangePicker } from './_components/daterange-picker';
 import { Reports } from './_components/Reports/Reports';
-import { ReportTransactions } from '@/types/transaction';
 import { getTransactionCount } from '@/lib/actions';
 
 export const metadata: Metadata = {
@@ -11,14 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default async function ReportsPage({
-  params,
   searchParams,
 }: {
-  params: { slug: string };
-  searchParams: {
-    startDate: string;
-    endDate: string;
-  };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { startDate, endDate } = await searchParams;
 
@@ -26,7 +18,10 @@ export default async function ReportsPage({
     startDate && endDate
       ? await getTransactionCount({
           where: {
-            timestamp: { lte: new Date(endDate), gte: new Date(startDate) },
+            timestamp: {
+              lte: new Date(endDate as string),
+              gte: new Date(startDate as string),
+            },
           },
         })
       : await getTransactionCount();
@@ -38,7 +33,9 @@ export default async function ReportsPage({
         <DateRangePicker />
       </div>
       {transactions > 0 ? (
-        <Reports date={searchParams} />
+        <Reports
+          date={{ startDate: startDate as string, endDate: endDate as string }}
+        />
       ) : (
         <div className="size-full flex items-center justify-center">
           <h1 className="text-xl">

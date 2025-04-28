@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { BudgetWithCategory } from '@/types/budget';
-import { cn } from '@/lib/utils';
 import DeleteBudget from './DeleteBudget';
 import EditBudget from './EditBudget';
 import { MultiSelectOption } from '@/components/ui/multiselect';
@@ -43,7 +42,7 @@ const BudgetList = ({
               Actions
             </p>
           </div>
-          {budgets.map((budget, index) => (
+          {budgets.map((budget) => (
             <div
               key={budget.id}
               className="grid grid-cols-4  items-center justify-between py-4 border-t-2 border-gray-100"

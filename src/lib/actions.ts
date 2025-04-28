@@ -24,7 +24,7 @@ export const createTransactionCategory = async (formData: FormData) => {
   // return false if user not logged in
   if (!session?.user) return { success: false };
 
-  const newCategory = await db.transactionCategory.create({
+  await db.transactionCategory.create({
     data: {
       icon,
       name,
@@ -61,7 +61,7 @@ export const updateTransactionCategory = async (
   // return false if user not logged in
   if (!session?.user) return { success: false };
 
-  const newCategory = await db.transactionCategory.update({
+  await db.transactionCategory.update({
     where: {
       id: categoryId,
     },
@@ -117,7 +117,7 @@ export const createTransaction = async (formData: FormData) => {
 
   if (!session?.user) return { success: false };
 
-  const newTransaction = await db.transaction.create({
+  await db.transaction.create({
     data: {
       name,
       amount: new Prisma.Decimal(amount),
@@ -155,7 +155,7 @@ export const updateTransaction = async (
 
   if (!session?.user) return { success: false };
 
-  const updatedTransaction = await db.transaction.update({
+  await db.transaction.update({
     where: {
       id: transactionId,
     },
@@ -235,7 +235,7 @@ export const createBudget = async (formData: FormData) => {
     where: { id: { in: categoryIds } },
   });
 
-  const budget = await db.budget.create({
+  await db.budget.create({
     data: {
       name: name,
       max: Prisma.Decimal(max),
@@ -296,7 +296,7 @@ export const updateBudget = async (formData: FormData, budgetId: number) => {
     where: { id: { in: categoryIds } },
   });
 
-  const budget = await db.budget.update({
+  await db.budget.update({
     where: {
       id: budgetId,
     },

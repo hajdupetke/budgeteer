@@ -1,22 +1,14 @@
 'use client';
 
 import * as React from 'react';
-import { TrendingUp } from 'lucide-react';
-import { Label, Pie, PieChart } from 'recharts';
+import { Pie, PieChart } from 'recharts';
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-import { ReportTransactions } from '@/types/transaction';
 import { CategoryChartData } from '@/types/reports';
 
 export function ExpensesByCategory({
@@ -24,7 +16,7 @@ export function ExpensesByCategory({
 }: {
   chartData: CategoryChartData[];
 }) {
-  let chartConfig = chartData.reduce((acc, item, index) => {
+  let chartConfig = chartData.reduce((acc, item) => {
     acc[item.category.toLowerCase().replace(/\s+/g, '_')] = {
       label: item.category,
     };

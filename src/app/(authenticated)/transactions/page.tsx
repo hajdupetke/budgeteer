@@ -9,10 +9,7 @@ export const metadata: Metadata = {
 export default async function TransactionsPage({
   searchParams,
 }: {
-  searchParams: {
-    transactionPage: string;
-    categoryPage: string;
-  };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { transactionPage, categoryPage } = await searchParams;
 
@@ -20,11 +17,17 @@ export default async function TransactionsPage({
     <div className="flex gap-2 flex-wrap xl:flex-nowrap size-full">
       <Transactions
         page={
-          transactionPage != undefined ? Number.parseInt(transactionPage) : 1
+          transactionPage != undefined
+            ? Number.parseInt(transactionPage as string)
+            : 1
         }
       />
       <Categories
-        page={categoryPage != undefined ? Number.parseInt(categoryPage) : 1}
+        page={
+          categoryPage != undefined
+            ? Number.parseInt(categoryPage as string)
+            : 1
+        }
       />
     </div>
   );

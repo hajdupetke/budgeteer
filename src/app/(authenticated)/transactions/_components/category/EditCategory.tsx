@@ -1,5 +1,4 @@
 import EditCategoryForm from './EditCategoryForm';
-import { X } from 'lucide-react';
 import { TransactionCategory } from '@prisma/client';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';

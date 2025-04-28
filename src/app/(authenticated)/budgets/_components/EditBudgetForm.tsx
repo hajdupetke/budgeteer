@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { updateBudget } from '@/lib/actions';
 import { BudgetSchema } from '@/lib/validation';
 import { z } from 'zod';

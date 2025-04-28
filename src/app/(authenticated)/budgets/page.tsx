@@ -8,11 +8,9 @@ export const metadata: Metadata = {
 export default async function BudgetsPage({
   searchParams,
 }: {
-  searchParams: {
-    page: string;
-  };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { page } = await searchParams;
+  const page = (await searchParams).page as string;
 
   return (
     <>

@@ -12,7 +12,6 @@ import {
   CommandItem,
   CommandList,
 } from './command';
-import { Button, buttonVariants } from './button';
 import { X } from 'lucide-react';
 
 export type MultiSelectOption = {
@@ -26,8 +25,6 @@ interface MultiSelectProps {
   onChange: (selection: any[]) => void;
   placeholder?: string;
   emptyMessage?: string;
-  className?: string;
-  disabled?: boolean;
   isInvalid?: boolean;
 }
 
@@ -37,8 +34,6 @@ export const MultiSelect = ({
   onChange,
   placeholder = 'Select items...',
   emptyMessage = 'No items found.',
-  className,
-  disabled = false,
   isInvalid,
 }: MultiSelectProps) => {
   const [open, setOpen] = useState(false);

@@ -48,6 +48,7 @@ export default function CreateCategoryForm({
 
   // Call server action when submitting form
   const onFormSubmit = async (values: CategoryFormData) => {
+    setIsSubmitting(true);
     try {
       const formData = new FormData();
       formData.append('icon', values.icon);
@@ -59,6 +60,7 @@ export default function CreateCategoryForm({
     } catch (err) {
       console.log(err);
     }
+    setIsSubmitting(false);
   };
 
   return (

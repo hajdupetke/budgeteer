@@ -1,16 +1,12 @@
-import { ReportTransactions } from '@/types/transaction';
 import { ExpensesByCategory } from '@/components/ui/charts/ExpensesByCategory';
 import {
   getCategories,
   getExpensesByCategory,
-  getBudgets,
   getExpenseVsIncome,
   getBudgetWithAmount,
 } from '@/lib/actions';
-import { PrismaBudgetWithCategory, BudgetWithCategory } from '@/types/budget';
 import { BudgetCharts } from '@/components/ui/charts/BudgetCharts';
 import { IncomeExpenseChart } from '@/components/ui/charts/IncomeExpenseChart';
-import { Prisma } from '@prisma/client';
 
 export const Reports = async ({
   date,

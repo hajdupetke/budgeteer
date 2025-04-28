@@ -1,10 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { buttonVariants } from '@/components/ui/button';
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogTitle,
 } from '@/components/ui/dialog';

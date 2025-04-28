@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   History,
   Calendar,
-  SlidersHorizontal,
   LogOut,
   CircleDollarSign,
 } from 'lucide-react';

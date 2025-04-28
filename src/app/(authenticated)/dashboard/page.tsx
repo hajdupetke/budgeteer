@@ -30,8 +30,8 @@ export default async function Dashboard() {
   if (transactionCount <= 0) {
     return (
       <div>
-        You haven't added provided any data yet. When you the breakdown of your
-        last month will appear here.
+        You haven&apos;t added provided any data yet. When you the breakdown of
+        your last month will appear here.
       </div>
     );
   }

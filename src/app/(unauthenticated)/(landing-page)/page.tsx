@@ -39,7 +39,7 @@ export default function Home() {
         <h2 className="text-xl md:text-3xl font-bold text-center w-full">
           How It Works
         </h2>
-        <p className="text-md text-stone-800">It's only 3 steps!</p>
+        <p className="text-md text-stone-800">It&apos;s only 3 steps!</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="flex flex-col items-center gap-2">
             <Image
