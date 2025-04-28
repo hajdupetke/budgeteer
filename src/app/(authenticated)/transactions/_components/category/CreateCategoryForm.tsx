@@ -80,6 +80,9 @@ export default function CreateCategoryForm({
                     type="button"
                     variant="outline"
                     className="w-full justify-start text-slate-400 h-12 text-sm"
+                    aria-invalid={
+                      form.formState.errors[field.name] !== undefined
+                    }
                     onClick={() => setShowPicker(!showPicker)}
                   >
                     {field.value ? (
