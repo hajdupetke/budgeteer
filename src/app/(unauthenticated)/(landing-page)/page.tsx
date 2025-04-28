@@ -76,8 +76,8 @@ export default function Home() {
             />
             <p className="text-xl font-bold">Achieve Your Goals</p>
             <p className="text-center w-3/4 text-stone-800">
-              Set financial goals, manage your spending, and be more mindful of
-              your finances. Start today!
+              Manage your spending, and be more mindful of your finances. Start
+              today!
             </p>
           </div>
         </div>

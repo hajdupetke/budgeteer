@@ -93,7 +93,7 @@ export default async function Dashboard() {
     <div className="flex flex-col gap-2">
       <h2 className="font-bold text-3xl">Welcome back, {session.user.name}!</h2>
       <p>These are your spending stastics from the past month.</p>
-      <div className="grid grid-cols-2 flex-wrap gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 flex-wrap gap-3">
         <div className="h-full flex flex-col gap-3">
           <Card className="h-full">
             <CardContent className="flex flex-col justify-center gap-4 h-full">
@@ -114,7 +114,7 @@ export default async function Dashboard() {
                       previousIncome._sum.amount.toNumber() /
                       income._sum.amount?.toNumber()
                     ).toFixed(2)}
-                    % from last month.
+                    % from previous month.
                   </div>
                 ) : (
                   <div className="flex gap-2 items-center text-success-800">
@@ -123,7 +123,7 @@ export default async function Dashboard() {
                       previousIncome._sum.amount.toNumber() /
                       income._sum.amount?.toNumber()
                     ).toFixed(2)}
-                    % from last month.
+                    % from previous month.
                   </div>
                 )}
               </CardFooter>
@@ -140,22 +140,22 @@ export default async function Dashboard() {
               <CardFooter>
                 {previousExpense._sum.amount.toNumber() >=
                 expense._sum.amount?.toNumber() ? (
-                  <div className="flex gap-2 items-center text-warning-900">
+                  <div className="flex gap-2 items-center text-success-800">
                     <TrendingDown /> Your expenses are down{' '}
                     {(
                       previousExpense._sum.amount.toNumber() /
                       expense._sum.amount?.toNumber()
                     ).toFixed(2)}
-                    % from last month.
+                    % from previous month.
                   </div>
                 ) : (
-                  <div className="flex gap-2 items-center text-success-800">
+                  <div className="flex gap-2 items-center text-warning-900">
                     <TrendingUp /> Your expense is up{' '}
                     {(
                       previousExpense._sum.amount.toNumber() /
                       expense._sum.amount?.toNumber()
                     ).toFixed(2)}
-                    % from last month.
+                    % from previous month.
                   </div>
                 )}
               </CardFooter>

@@ -1,10 +1,6 @@
 'use client';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import EditBudgetForm from './EditBudgetForm';
 import { toast } from 'sonner';
 import { MultiSelectOption } from '@/components/ui/multiselect';
@@ -24,9 +20,7 @@ const EditBudget = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
-        <DialogTitle className="text-2xl font-bold">
-          Create a new budget
-        </DialogTitle>
+        <DialogTitle className="text-2xl font-bold">Edit a budget</DialogTitle>
         <EditBudgetForm
           categories={categories}
           budget={budget}

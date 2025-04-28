@@ -130,7 +130,7 @@ export default function EditBudgetForm({
           disabled={isSubmitting}
           className="w-full rounded text-lg py-6 bg-primary-600 hover:bg-primary-700 box-shadow-md shadow-gray-600"
         >
-          {isSubmitting ? 'Saving...' : 'Create Budget'}
+          {isSubmitting ? 'Saving...' : 'Edit Budget'}
         </Button>
       </form>
     </Form>
