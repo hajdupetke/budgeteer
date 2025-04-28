@@ -45,7 +45,7 @@ const DeleteCategory = ({
               const res = await deleteTransactionCategory(category.id);
               if (res.success) {
                 setOpen(false);
-                toast.success('Category succesfully deleted!');
+                toast.success('Category successfully deleted!');
               }
             }}
             className="bg-warning-600! font-bold hover:bg-warning-800! cursor-pointer"

@@ -41,7 +41,7 @@ const NewTransaction = ({
           categories={categories}
           onSuccess={() => {
             setOpen(false);
-            toast.success('Transaction succesfully created!');
+            toast.success('Transaction successfully created!');
           }}
         />
       </DialogContent>

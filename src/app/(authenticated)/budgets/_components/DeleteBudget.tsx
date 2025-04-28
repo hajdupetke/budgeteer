@@ -41,7 +41,7 @@ const DeleteBudget = ({
               const res = await deleteBudget(budget.id);
               if (res.success) {
                 setOpen(false);
-                toast.success('Budget succesfully deleted!');
+                toast.success('Budget successfully deleted!');
               }
             }}
             className="bg-warning-600! font-bold hover:bg-warning-800! cursor-pointer"

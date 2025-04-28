@@ -37,7 +37,7 @@ export default function CreateTransactionForm({
   categories: TransactionCategory[];
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [date, setDate] = useState<Date | undefined>(new Date());
 
   // Make form using useForm hook
   const form = useForm<TransactionFormData>({
@@ -47,7 +47,7 @@ export default function CreateTransactionForm({
       name: '',
       amount: 0,
       categoryId: 0,
-      timestamp: new Date(),
+      timestamp: date,
       type: 'INCOME',
     },
   });
@@ -188,6 +188,7 @@ export default function CreateTransactionForm({
                     field.onChange(newDate);
                   }}
                   field={field}
+                  isInvalid={form.formState.errors[field.name] !== undefined}
                 />
               </FormControl>
               <FormMessage />

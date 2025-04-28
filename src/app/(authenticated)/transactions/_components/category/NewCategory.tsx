@@ -35,7 +35,7 @@ const NewCategory = () => {
         <CreateCategoryForm
           onSuccess={() => {
             setOpen(false);
-            toast.success('Category succesfully created!');
+            toast.success('Category successfully created!');
           }}
         />
       </DialogContent>

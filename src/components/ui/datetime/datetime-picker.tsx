@@ -28,6 +28,7 @@ interface DateTimePickerProps {
     onChange: (value: any) => void;
     value: Date | string | undefined;
   };
+  isInvalid: boolean;
 }
 
 export function DateTimePicker({
@@ -35,6 +36,7 @@ export function DateTimePicker({
   setDate,
   className,
   field,
+  isInvalid,
 }: DateTimePickerProps) {
   const [selectedTime, setSelectedTime] = React.useState<{
     hours: string;
@@ -131,7 +133,7 @@ export function DateTimePicker({
   return (
     <div className={cn('grid gap-2', className)}>
       <Popover>
-        <PopoverTrigger asChild className="h-12">
+        <PopoverTrigger asChild className="h-12" aria-invalid={isInvalid}>
           <Button
             id="date"
             variant={'outline'}
@@ -149,12 +151,7 @@ export function DateTimePicker({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={date}
-            onSelect={handleSelect}
-            initialFocus
-          />
+          <Calendar mode="single" selected={date} onSelect={handleSelect} />
           <div className="border-t border-border p-3 flex justify-between items-center">
             <div className="text-sm font-medium">Time:</div>
             <div className="flex items-center gap-2">

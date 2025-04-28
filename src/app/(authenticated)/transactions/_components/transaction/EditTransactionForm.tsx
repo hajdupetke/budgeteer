@@ -196,6 +196,7 @@ export default function EditTransactionForm({
                     field.onChange(newDate);
                   }}
                   field={field}
+                  isInvalid={form.formState.errors[field.name] !== undefined}
                 />
               </FormControl>
               <FormMessage />

@@ -19,7 +19,7 @@ const EditTransaction = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogTitle className="text-2xl font-bold">
-          Create a new budget
+          Edit a transaction
         </DialogTitle>
         <EditTransactionForm
           categories={categories}

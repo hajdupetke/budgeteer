@@ -41,7 +41,7 @@ const DeleteTransaction = ({
               const res = await deleteTransaction(transaction.id);
               if (res.success) {
                 setOpen(false);
-                toast.success('Transaction succesfully deleted!');
+                toast.success('Transaction successfully deleted!');
               }
             }}
             className="bg-warning-600! font-bold hover:bg-warning-800! cursor-pointer"
