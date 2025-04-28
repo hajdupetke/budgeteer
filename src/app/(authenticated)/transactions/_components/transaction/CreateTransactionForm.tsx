@@ -61,7 +61,7 @@ export default function CreateTransactionForm({
       formData.append('categoryId', values.categoryId.toString());
       formData.append('transactionType', values.type);
       if (values.timestamp)
-      formData.append('timestamp', new Date(values.timestamp).toString());
+        formData.append('timestamp', new Date(values.timestamp).toString());
       const res = await createTransaction(formData);
       // if response is good run onSuccess function
       if (res.success && onSuccess) onSuccess();

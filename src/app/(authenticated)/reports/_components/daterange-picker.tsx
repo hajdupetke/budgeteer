@@ -59,7 +59,6 @@ export const DateRangePicker = ({ className }: DateRangePickerProps) => {
           align="start"
         >
           <Calendar
-            initialFocus
             mode="range"
             defaultMonth={dateRange.from}
             selected={dateRange}
