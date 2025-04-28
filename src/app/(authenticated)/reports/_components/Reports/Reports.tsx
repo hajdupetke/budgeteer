@@ -54,11 +54,11 @@ export const Reports = async ({
 
   return (
     <div className="flex gap-3 h-full w-full flex-col items-center">
-      <div className="grid grid-cols-2 gap-3 w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
         <ExpensesByCategory chartData={categoryExpenseChartData} />
         <BudgetCharts chartData={budgetWithAmount} />
       </div>
-      <div className="w-3/4">
+      <div className="w-full xl:w-2/5">
         <IncomeExpenseChart chartData={incomeExpenseResponse} />
       </div>
     </div>

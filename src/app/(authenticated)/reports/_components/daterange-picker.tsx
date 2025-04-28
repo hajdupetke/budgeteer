@@ -30,7 +30,7 @@ export const DateRangePicker = ({ className }: DateRangePickerProps) => {
   useEffect(() => {
     if (dateRange.from) params.set('startDate', dateRange.from.toISOString());
     if (dateRange.to) params.set('endDate', dateRange.to.toISOString());
-
+    console.log(dateRange);
     replace(`${pathname}?${params.toString()}`);
   }, [dateRange]);
 
