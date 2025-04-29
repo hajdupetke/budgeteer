@@ -38,8 +38,8 @@ export default async function ReportsPage({
         />
       ) : (
         <div className="size-full flex items-center justify-center">
-          <h1 className="text-xl">
-            No data available for selected timespan :c
+          <h1 className="text-xl font-bold">
+            No data available for selected timespan
           </h1>
         </div>
       )}
