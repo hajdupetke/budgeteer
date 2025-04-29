@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { db } from './db';
 /* TransactionCategory Schema */
 
 export const TransactionCategorySchema = z.object({
