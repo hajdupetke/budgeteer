@@ -471,6 +471,11 @@ export const getExpensesByCategory = async (
             },
             type: TransactionType.EXPENSE,
             userId: session.user.id,
+            category: {
+              id: {
+                not: undefined,
+              },
+            },
           },
         })
       : await db.transaction.groupBy({
@@ -478,7 +483,16 @@ export const getExpensesByCategory = async (
           _sum: {
             amount: true,
           },
-          where: { type: TransactionType.EXPENSE, userId: session.user.id },
+          where: {
+            type: TransactionType.EXPENSE,
+            userId: session.user.id,
+            category: {
+              id: {
+                not: undefined,
+              },
+            },
+          },
         });
+
   return expensesByCategory;
 };
