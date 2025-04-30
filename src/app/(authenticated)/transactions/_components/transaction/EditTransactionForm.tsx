@@ -66,7 +66,7 @@ export default function EditTransactionForm({
       const formData = new FormData();
       formData.append('name', values.name);
       formData.append('amount', values.amount.toString());
-      formData.append('categoryId', values.categoryId.toString());
+      formData.append('categoryId', (values?.categoryId as number).toString());
       formData.append('transactionType', values.type);
       if (values.timestamp)
         formData.append('timestamp', new Date(values.timestamp).toString());
