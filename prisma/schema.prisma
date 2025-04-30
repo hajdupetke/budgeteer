@@ -98,8 +98,8 @@ model Transaction {
   name       String
   amount     Decimal
   timestamp  DateTime
-  categoryId Int
-  category   TransactionCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId Int?
+  category   TransactionCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull) 
   type       TransactionType @default(INCOME)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt

@@ -42,7 +42,7 @@ const TransactionList = ({
             ) : (
               <TrendingDown className="text-warning-600" />
             )}
-            {transaction.category.icon}
+            {transaction?.category ? transaction.category.icon : '❗️'}
             <span className="text-lg font-semibold flex items-center gap-2">
               {transaction.name}{' '}
             </span>
