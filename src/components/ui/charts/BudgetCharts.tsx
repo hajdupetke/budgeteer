@@ -11,11 +11,11 @@ import {
 } from '@/components/ui/chart';
 
 const chartConfig = {
-  max: {
-    label: 'Max',
-  },
   amount: {
     label: 'Current',
+  },
+  remaining: {
+    label: 'Remaining',
   },
 } satisfies ChartConfig;
 
@@ -24,6 +24,16 @@ export function BudgetCharts({
 }: {
   chartData: { name: string; max: number; amount: number }[];
 }) {
+  const remainingChartData = chartData.map((chartObj) => ({
+    name: chartObj.name,
+    amount: chartObj.amount,
+    remaining:
+      chartObj.max - chartObj.amount > 0 ? chartObj.max - chartObj.amount : 0,
+  }));
+
+  console.log(chartData);
+  console.log(remainingChartData);
+
   return (
     <Card className="size-full py-4">
       <CardHeader>
@@ -33,7 +43,7 @@ export function BudgetCharts({
         <ChartContainer config={chartConfig}>
           <BarChart
             barCategoryGap={8}
-            data={chartData}
+            data={remainingChartData}
             layout="vertical"
             stackOffset="none"
             margin={{ top: 10, right: 10, left: 0, bottom: 20 }}
@@ -41,7 +51,9 @@ export function BudgetCharts({
             <CartesianGrid horizontal strokeDasharray="3 3" />
             <XAxis type="number" />
             <YAxis dataKey="name" type="category" width={90} />
-            <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+            <ChartTooltip
+              content={<ChartTooltipContent hideLabel className="w-40" />}
+            />
 
             <Bar
               dataKey="amount"
@@ -50,7 +62,7 @@ export function BudgetCharts({
               radius={0}
             />
             <Bar
-              dataKey="max"
+              dataKey="remaining"
               stackId="a"
               fill="var(--color-primary-200)"
               radius={0}
