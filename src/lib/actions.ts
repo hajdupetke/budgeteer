@@ -38,13 +38,13 @@ export const createTransactionCategory = async (formData: FormData) => {
   return { success: true };
 };
 
-export const getCategoryCount = async () => {
+export const getCategoryCount = async (dbOptions = {}) => {
   const session = await auth();
 
   // return false if user not logged in
   if (!session?.user) throw new Error('User not logged in!');
 
-  const count = await db.transactionCategory.count();
+  const count = await db.transactionCategory.count(dbOptions);
   return count;
 };
 
@@ -317,12 +317,12 @@ export const updateBudget = async (formData: FormData, budgetId: number) => {
   return { success: true };
 };
 
-export const getBudgetCount = async () => {
+export const getBudgetCount = async (dbOptions = {}) => {
   const session = await auth();
 
   if (!session?.user) throw new Error('User not logged in');
 
-  const count = await db.budget.count();
+  const count = await db.budget.count(dbOptions);
 
   return count;
 };

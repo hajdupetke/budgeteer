@@ -31,9 +31,6 @@ export function BudgetCharts({
       chartObj.max - chartObj.amount > 0 ? chartObj.max - chartObj.amount : 0,
   }));
 
-  console.log(chartData);
-  console.log(remainingChartData);
-
   return (
     <Card className="size-full py-4">
       <CardHeader>

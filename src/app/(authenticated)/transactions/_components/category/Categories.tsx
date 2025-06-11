@@ -19,7 +19,11 @@ const Categories = async ({ page }: { page: number }) => {
   const session = await auth();
   if (!session?.user) return redirect('/sign-in');
 
-  const categoryCount = await getCategoryCount();
+  const categoryCount = await getCategoryCount({
+    where: { userId: session.user.id },
+  });
+
+  console.log('categori page', page);
 
   const categories = await getCategories({
     where: {
@@ -40,17 +44,25 @@ const Categories = async ({ page }: { page: number }) => {
           <NewCategory />
         </div>
       </CardHeader>
-      <CardContent>
-        <CategoryList categories={categories} />
-      </CardContent>
-      <CardFooter>
-        <PaginationWithLinks
-          page={page}
-          totalCount={categoryCount}
-          pageSize={CATEGORIES_PER_PAGE}
-          pageSearchParam="categoryPage"
-        />
-      </CardFooter>
+      {categoryCount > 0 ? (
+        <>
+          <CardContent>
+            <CategoryList categories={categories} />
+          </CardContent>
+          <CardFooter>
+            <PaginationWithLinks
+              page={page}
+              totalCount={categoryCount}
+              pageSize={CATEGORIES_PER_PAGE}
+              pageSearchParam="categoryPage"
+            />
+          </CardFooter>
+        </>
+      ) : (
+        <CardContent className="flex justify-center">
+          You haven't provided any categories yet!
+        </CardContent>
+      )}
     </Card>
   );
 };

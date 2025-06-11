@@ -14,11 +14,19 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { PaginationWithLinks } from '@/components/ui/pagination-with-links';
+import { auth } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 
-const TRANSACTION_ITEMS_PER_PAGE = 8;
+const TRANSACTION_ITEMS_PER_PAGE = 6;
 
 const Transactions = async ({ page }: { page: number }) => {
-  const transactionCount = await getTransactionCount();
+  const session = await auth();
+
+  if (!session?.user) redirect('/sign-in');
+
+  const transactionCount = await getTransactionCount({
+    where: { userId: session.user.id },
+  });
 
   const categories = await getCategories();
 
@@ -50,17 +58,28 @@ const Transactions = async ({ page }: { page: number }) => {
           <NewTransaction categories={categories} />
         </div>
       </CardHeader>
-      <CardContent>
-        <TransactionList transactions={transactions} categories={categories} />
-      </CardContent>
-      <CardFooter>
-        <PaginationWithLinks
-          page={page}
-          totalCount={transactionCount}
-          pageSize={TRANSACTION_ITEMS_PER_PAGE}
-          pageSearchParam="transactionPage"
-        />
-      </CardFooter>
+      {transactionCount > 0 ? (
+        <>
+          <CardContent>
+            <TransactionList
+              transactions={transactions}
+              categories={categories}
+            />
+          </CardContent>
+          <CardFooter>
+            <PaginationWithLinks
+              page={page}
+              totalCount={transactionCount}
+              pageSize={TRANSACTION_ITEMS_PER_PAGE}
+              pageSearchParam="transactionPage"
+            />
+          </CardFooter>
+        </>
+      ) : (
+        <CardContent className="flex justify-center">
+          You haven't provided any transactions yet!
+        </CardContent>
+      )}
     </Card>
   );
 };

@@ -4,10 +4,15 @@ import { BudgetWithCategory, PrismaBudgetWithCategory } from '@/types/budget';
 import BudgetList from './BudgetList';
 import NewBudget from './NewBudget';
 import { getCategories, getBudgets, getBudgetCount } from '@/lib/actions';
+import { auth } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 
 const BUDGETS_PER_PAGE = 8;
 
 const Budgets = async ({ page }: { page: number }) => {
+  const session = await auth();
+  if (!session?.user) return redirect('/sign-in');
+
   const categories = (
     await getCategories({
       select: {
@@ -32,7 +37,11 @@ const Budgets = async ({ page }: { page: number }) => {
     categoryIds: budget.categories.map((category) => category.id),
   })) as BudgetWithCategory[];
 
-  const budgetCount = await getBudgetCount();
+  const budgetCount = await getBudgetCount({
+    where: { userId: session.user.id },
+  });
+
+  console.log(budgetCount);
 
   return (
     <div className="w-full">
