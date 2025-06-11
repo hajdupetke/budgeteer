@@ -60,7 +60,7 @@ const Categories = async ({ page }: { page: number }) => {
         </>
       ) : (
         <CardContent className="flex justify-center">
-          You haven't provided any categories yet!
+          You haven&apos;t provided any categories yet!
         </CardContent>
       )}
     </Card>

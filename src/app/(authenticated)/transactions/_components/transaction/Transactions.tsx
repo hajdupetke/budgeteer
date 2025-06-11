@@ -77,7 +77,7 @@ const Transactions = async ({ page }: { page: number }) => {
         </>
       ) : (
         <CardContent className="flex justify-center">
-          You haven't provided any transactions yet!
+          You haven&apos;t provided any transactions yet!
         </CardContent>
       )}
     </Card>

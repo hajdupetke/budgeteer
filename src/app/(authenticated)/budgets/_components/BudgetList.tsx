@@ -109,7 +109,7 @@ const BudgetList = ({
   } else {
     return (
       <Card>
-        <CardContent>You haven't created any budgets yet!</CardContent>
+        <CardContent>You haven&apos;t created any budgets yet!</CardContent>
       </Card>
     );
   }
