@@ -91,7 +91,9 @@ export default async function Dashboard() {
 
   return (
     <div className="flex flex-col gap-2">
-      <h2 className="font-bold text-3xl">Welcome back, {session.user.name}!</h2>
+      <h2 className="font-bold text-3xl">
+        Welcome back{session.user.name ? `, ${session.user.name}` : ''}!
+      </h2>
       <p>These are your spending stastics from the past month.</p>
       <div className="grid grid-cols-1 md:grid-cols-2 flex-wrap gap-3">
         <div className="h-full flex flex-col gap-3">
