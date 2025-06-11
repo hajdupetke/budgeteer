@@ -25,6 +25,8 @@ export default async function Dashboard() {
 
   if (!session?.user) redirect('/sign-in');
 
+  console.log(session.user);
+
   const transactionCount = await getTransactionCount();
 
   if (transactionCount <= 0) {
