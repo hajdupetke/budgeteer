@@ -1,3 +1,4 @@
+import { renderReadSection } from '@/components/read-boundary';
 import BudgetList from './BudgetList';
 import NewBudget from './NewBudget';
 import { getCategoryOptions, getBudgets, getBudgetCount } from '@/lib/data';
@@ -6,7 +7,7 @@ import { redirect } from 'next/navigation';
 
 const BUDGETS_PER_PAGE = 8;
 
-const Budgets = async ({ page }: { page: number }) => {
+const BudgetsContent = async ({ page }: { page: number }) => {
   const session = await auth();
   if (!session?.user) return redirect('/sign-in');
 
@@ -46,4 +47,6 @@ const Budgets = async ({ page }: { page: number }) => {
   );
 };
 
-export default Budgets;
+export default async function Budgets(props: { page: number }) {
+  return renderReadSection(() => BudgetsContent(props));
+}

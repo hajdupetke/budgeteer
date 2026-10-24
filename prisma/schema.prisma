@@ -78,6 +78,7 @@ model VerificationToken {
   @@id([identifier, token])
 }
  
+/// Additional scalar CHECK constraints are defined in the financial-invariants SQL migration.
 model TransactionCategory {
   id         Int @id @default(autoincrement())
   userId     String?
@@ -91,6 +92,7 @@ model TransactionCategory {
   updatedAt  DateTime @updatedAt
 }
 
+/// Additional scalar CHECK constraints are defined in the financial-invariants SQL migration.
 model Transaction {
   id         Int @id @default(autoincrement())
   userId     String 
@@ -110,6 +112,7 @@ enum TransactionType {
   EXPENSE
 }
 
+/// Additional scalar CHECK constraints are defined in the financial-invariants SQL migration.
 model Budget {
   id Int @id @default(autoincrement())
   userId String

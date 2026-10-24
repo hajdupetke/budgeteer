@@ -1,6 +1,7 @@
 'use client';
 
 import { toast } from 'sonner';
+import { applyFieldErrors } from '@/lib/form-errors';
 
 import { useState } from 'react';
 import { createBudget } from '@/lib/actions';
@@ -37,15 +38,16 @@ export default function CreateBudgetForm({
   const form = useForm<BudgetFormData>({
     resolver: zodResolver(BudgetSchema),
     defaultValues: {
-      id: 0,
+      id: undefined,
       name: '',
-      max: 0,
+      max: '',
       categoryIds: [],
     },
   });
 
   // Call server action when submitting form
   const onFormSubmit = async (values: BudgetFormData) => {
+    setIsSubmitting(true);
     try {
       const formData = new FormData();
       formData.append('name', values.name);
@@ -56,6 +58,7 @@ export default function CreateBudgetForm({
       if (res.success) {
         onSuccess?.();
       } else {
+        applyFieldErrors(form.setError, res.error.fieldErrors, ['name', 'max', 'categoryIds']);
         toast.error(res.error.message);
       }
     } catch (err) {

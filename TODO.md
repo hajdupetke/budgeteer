@@ -40,17 +40,17 @@ tokens can escape through read helpers.
 
 ### Server-side validation and database invariants
 
-- [ ] Parse all action inputs with server-side schemas; retain client validation
+- [x] Parse all action inputs with server-side schemas; retain client validation
       for usability.
-- [ ] Validate positive integer IDs, trimmed names, bounded strings, permitted
+- [x] Validate positive integer IDs, trimmed names, bounded strings, permitted
       enum values, valid dates, and bounded category arrays.
-- [ ] Validate finite positive monetary amounts, supported precision, and a
+- [x] Validate finite positive monetary amounts, supported precision, and a
       documented maximum amount.
-- [ ] Handle malformed JSON, missing form fields, invalid timestamps, and
+- [x] Handle malformed JSON, missing form fields, invalid timestamps, and
       unsupported report aggregation steps with structured errors.
-- [ ] Bound report ranges and query sizes; prevent unbounded caller-controlled
+- [x] Bound report ranges and query sizes; prevent unbounded caller-controlled
       reads and expensive aggregations.
-- [ ] Add database constraints for positive amounts/limits and other persistent
+- [x] Add database constraints for positive amounts/limits and other persistent
       business invariants after checking existing data.
 
 Acceptance: direct action calls that bypass browser validation cannot persist

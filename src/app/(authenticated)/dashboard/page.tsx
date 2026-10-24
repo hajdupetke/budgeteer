@@ -1,3 +1,4 @@
+import { renderReadSection } from '@/components/read-boundary';
 import {
   getExpense,
   getIncome,
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
   title: 'Dashboard',
 };
 
-export default async function Dashboard() {
+async function DashboardContent() {
   const session = await auth();
 
   if (!session?.user) redirect('/sign-in');
@@ -168,4 +169,8 @@ export default async function Dashboard() {
       </div>
     </div>
   );
+}
+
+export default async function Dashboard() {
+  return renderReadSection(DashboardContent);
 }

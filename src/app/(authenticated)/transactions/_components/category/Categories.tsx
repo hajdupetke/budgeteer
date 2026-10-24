@@ -1,3 +1,4 @@
+import { renderReadSection } from '@/components/read-boundary';
 import { getCategories, getCategoryCount } from '@/lib/data';
 import CategoryList from './CategoryList';
 import NewCategory from './NewCategory';
@@ -13,7 +14,7 @@ import { redirect } from 'next/navigation';
 
 const CATEGORIES_PER_PAGE = 10;
 
-const Categories = async ({ page }: { page: number }) => {
+const CategoriesContent = async ({ page }: { page: number }) => {
   const session = await auth();
   if (!session?.user) return redirect('/sign-in');
 
@@ -52,4 +53,6 @@ const Categories = async ({ page }: { page: number }) => {
   );
 };
 
-export default Categories;
+export default async function Categories(props: { page: number }) {
+  return renderReadSection(() => CategoriesContent(props));
+}

@@ -1,6 +1,9 @@
 'use client';
 
+import type { TransactionWithCategory } from '@/types/transaction';
+
 import { toast } from 'sonner';
+import { applyFieldErrors } from '@/lib/form-errors';
 
 import { useState, useEffect } from 'react';
 import { updateTransaction } from '@/lib/actions';
@@ -36,7 +39,7 @@ export default function EditTransactionForm({
   onSuccess,
   categories,
 }: {
-  transaction: TransactionFormData;
+  transaction: TransactionWithCategory;
   onSuccess?: () => void;
   categories: CategoryOption[];
 }) {
@@ -49,8 +52,8 @@ export default function EditTransactionForm({
     defaultValues: {
       id: transaction?.id,
       name: transaction?.name,
-      amount: transaction?.amount,
-      categoryId: transaction?.categoryId,
+      amount: transaction?.amount.toFixed(2),
+      categoryId: transaction?.categoryId ?? undefined,
       timestamp: transaction?.timestamp,
       type: transaction?.type,
     },
@@ -58,12 +61,13 @@ export default function EditTransactionForm({
 
   useEffect(() => {
     if (transaction) {
-      form.reset(transaction);
+      form.reset({ ...transaction, amount: transaction.amount.toFixed(2), categoryId: transaction.categoryId ?? undefined });
     }
   }, [transaction, form]);
 
   // Call server action when submitting form
   const onFormSubmit = async (values: TransactionFormData) => {
+    setIsSubmitting(true);
     try {
       const formData = new FormData();
       formData.append('name', values.name);
@@ -71,12 +75,13 @@ export default function EditTransactionForm({
       formData.append('categoryId', (values?.categoryId as number).toString());
       formData.append('transactionType', values.type);
       if (values.timestamp)
-        formData.append('timestamp', new Date(values.timestamp).toString());
+        formData.append('timestamp', new Date(values.timestamp).toISOString());
       const res = await updateTransaction(formData, transaction.id as number);
       // if response is good run onSuccess function
       if (res.success) {
         onSuccess?.();
       } else {
+        applyFieldErrors(form.setError, res.error.fieldErrors, ['name', 'amount', 'categoryId', 'timestamp', 'type']);
         toast.error(res.error.message);
       }
     } catch (err) {

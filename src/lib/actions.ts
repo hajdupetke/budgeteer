@@ -8,9 +8,8 @@ import {
   categoryConnection,
 } from './authorization';
 import type { MutationResult } from './authorization';
-import { RecordIdSchema, parseCategoryId, parseBudgetCategoryIds } from './validation';
+import { RecordIdSchema, parseCategoryForm, parseTransactionForm, parseBudgetForm } from './validation';
 import { Prisma } from '@prisma/client';
-import { TransactionType } from '@prisma/client';
 
 // A failed refresh must not turn a committed write into a failed save response.
 const revalidateMutation = (result: MutationResult, path: string): MutationResult => {
@@ -36,8 +35,7 @@ export const logOut = async () => {
 
 export const createTransactionCategory = async (formData: FormData) => {
   const result = await runMutation('createTransactionCategory', async (userId) => {
-    const icon = formData.get('icon') as string;
-    const name = formData.get('name') as string;
+    const { icon, name } = parseCategoryForm(formData);
 
     await db.transactionCategory.create({
       data: {
@@ -59,8 +57,7 @@ export const updateTransactionCategory = async (
   categoryId: number
 ) => {
   const result = await runMutation('updateTransactionCategory', async (userId) => {
-    const icon = formData.get('icon') as string;
-    const name = formData.get('name') as string;
+    const { icon, name } = parseCategoryForm(formData);
 
     await db.transactionCategory.update({
       where: {
@@ -91,18 +88,14 @@ export const deleteTransactionCategory = async (categoryId: number) => {
 
 export const createTransaction = async (formData: FormData) => {
   const result = await runMutation('createTransaction', async (userId) => {
-    const name = formData.get('name') as string;
-    const amount = Number.parseFloat(formData.get('amount') as string);
-    const categoryId = parseCategoryId(formData.get('categoryId'));
-    const dateStr = formData.get('timestamp') as string;
-    const transactionType = formData.get('transactionType') as string;
+    const { name, amount, categoryId, timestamp, type } = parseTransactionForm(formData);
 
     await db.transaction.create({
       data: {
         name,
         amount: new Prisma.Decimal(amount),
-        timestamp: new Date(dateStr),
-        type: TransactionType[transactionType as keyof typeof TransactionType],
+        timestamp,
+        type,
         category: { connect: categoryConnection(categoryId, userId) },
         user: {
           connect: {
@@ -122,11 +115,7 @@ export const updateTransaction = async (
   transactionId: number
 ) => {
   const result = await runMutation('updateTransaction', async (userId) => {
-    const name = formData.get('name') as string;
-    const amount = Number.parseFloat(formData.get('amount') as string);
-    const categoryId = parseCategoryId(formData.get('categoryId'));
-    const dateStr = formData.get('timestamp') as string;
-    const transactionType = formData.get('transactionType') as string;
+    const { name, amount, categoryId, timestamp, type } = parseTransactionForm(formData);
 
     await db.transaction.update({
       where: {
@@ -136,8 +125,8 @@ export const updateTransaction = async (
       data: {
         name,
         amount: new Prisma.Decimal(amount),
-        timestamp: new Date(dateStr),
-        type: TransactionType[transactionType as keyof typeof TransactionType],
+        timestamp,
+        type,
         category: { connect: categoryConnection(categoryId, userId) },
       },
     });
@@ -161,15 +150,13 @@ export const deleteTransaction = async (transactionId: number) => {
 
 export const createBudget = async (formData: FormData) => {
   const result = await runMutation('createBudget', async (userId) => {
-    const name = formData.get('name') as string;
-    const max = Number.parseFloat(formData.get('max') as string);
-    const categories = parseBudgetCategoryIds(formData.get('categoryIds'))
-      .map((id) => categoryConnection(id, userId));
+    const { name, max, categoryIds } = parseBudgetForm(formData);
+    const categories = categoryIds.map((id) => categoryConnection(id, userId));
 
     await db.budget.create({
       data: {
         name: name,
-        max: Prisma.Decimal(max),
+        max: new Prisma.Decimal(max),
         user: {
           connect: {
             id: userId,
@@ -198,10 +185,8 @@ export const deleteBudget = async (budgetId: number) => {
 
 export const updateBudget = async (formData: FormData, budgetId: number) => {
   const result = await runMutation('updateBudget', async (userId) => {
-    const name = formData.get('name') as string;
-    const max = Number.parseFloat(formData.get('max') as string);
-    const categories = parseBudgetCategoryIds(formData.get('categoryIds'))
-      .map((id) => categoryConnection(id, userId));
+    const { name, max, categoryIds } = parseBudgetForm(formData);
+    const categories = categoryIds.map((id) => categoryConnection(id, userId));
 
     await db.budget.update({
       where: {
@@ -210,7 +195,7 @@ export const updateBudget = async (formData: FormData, budgetId: number) => {
       },
       data: {
         name: name,
-        max: Prisma.Decimal(max),
+        max: new Prisma.Decimal(max),
         categories: {
           connect: categories,
         },

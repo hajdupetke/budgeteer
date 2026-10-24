@@ -1,3 +1,4 @@
+import { renderReadSection } from '@/components/read-boundary';
 import { Metadata } from 'next';
 import { DateRangePicker } from './_components/daterange-picker';
 import { Reports } from './_components/Reports/Reports';
@@ -11,23 +12,19 @@ export default async function ReportsPage({ searchParams }: {
 }) {
   const { startDate, endDate } = await searchParams;
   const parsed = parseReportDateRange(startDate, endDate);
-  const transactions = parsed.success ? await getTransactionCount(parsed.data) : 0;
+  const content = parsed.success ? await renderReadSection(async () => {
+    const transactions = await getTransactionCount(parsed.data);
+    if (transactions > 0) return Reports({ input: parsed.data });
+    return <p>No data available for selected timespan</p>;
+  }) : <p role="alert">{parsed.error.issues[0]?.message ?? 'Select a valid date range.'}</p>;
 
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-row items-center gap-4 w-full">
         <h2 className="font-bold text-3xl">Financial reports</h2>
-        <DateRangePicker />
+        <DateRangePicker initialRange={parsed.success ? { from: parsed.data.range.start, to: parsed.data.range.end } : undefined} />
       </div>
-      {!parsed.success ? (
-        <p role="alert">Invalid date range. Select valid start and end dates in order.</p>
-      ) : transactions > 0 ? (
-        <Reports input={parsed.data} />
-      ) : (
-        <div className="size-full flex items-center justify-center">
-          <h1 className="text-xl font-bold">No data available for selected timespan</h1>
-        </div>
-      )}
+      {content}
     </div>
   );
 }

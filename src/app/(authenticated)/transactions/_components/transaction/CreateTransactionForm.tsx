@@ -1,6 +1,7 @@
 'use client';
 
 import { toast } from 'sonner';
+import { applyFieldErrors } from '@/lib/form-errors';
 
 import { useState } from 'react';
 import { createTransaction } from '@/lib/actions';
@@ -45,9 +46,9 @@ export default function CreateTransactionForm({
   const form = useForm<TransactionFormData>({
     resolver: zodResolver(TransactionSchema),
     defaultValues: {
-      id: 0,
+      id: undefined,
       name: '',
-      amount: 0,
+      amount: '',
       categoryId: 0,
       timestamp: date,
       type: 'INCOME',
@@ -56,6 +57,7 @@ export default function CreateTransactionForm({
 
   // Call server action when submitting form
   const onFormSubmit = async (values: TransactionFormData) => {
+    setIsSubmitting(true);
     try {
       const formData = new FormData();
       formData.append('name', values.name);
@@ -63,12 +65,13 @@ export default function CreateTransactionForm({
       formData.append('categoryId', (values.categoryId as number).toString());
       formData.append('transactionType', values.type);
       if (values.timestamp)
-        formData.append('timestamp', new Date(values.timestamp).toString());
+        formData.append('timestamp', new Date(values.timestamp).toISOString());
       const res = await createTransaction(formData);
       // if response is good run onSuccess function
       if (res.success) {
         onSuccess?.();
       } else {
+        applyFieldErrors(form.setError, res.error.fieldErrors, ['name', 'amount', 'categoryId', 'timestamp', 'type']);
         toast.error(res.error.message);
       }
     } catch (err) {

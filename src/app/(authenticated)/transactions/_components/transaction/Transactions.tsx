@@ -1,3 +1,4 @@
+import { renderReadSection } from '@/components/read-boundary';
 import TransactionList from './TransactionList';
 import NewTransaction from './NewTransaction';
 import {
@@ -17,7 +18,7 @@ import { redirect } from 'next/navigation';
 
 const TRANSACTION_ITEMS_PER_PAGE = 6;
 
-const Transactions = async ({ page }: { page: number }) => {
+const TransactionsContent = async ({ page }: { page: number }) => {
   const session = await auth();
 
   if (!session?.user) redirect('/sign-in');
@@ -67,4 +68,6 @@ const Transactions = async ({ page }: { page: number }) => {
   );
 };
 
-export default Transactions;
+export default async function Transactions(props: { page: number }) {
+  return renderReadSection(() => TransactionsContent(props));
+}

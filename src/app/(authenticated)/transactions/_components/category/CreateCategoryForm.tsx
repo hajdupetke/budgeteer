@@ -1,6 +1,7 @@
 'use client';
 
 import { toast } from 'sonner';
+import { applyFieldErrors } from '@/lib/form-errors';
 
 import { useState } from 'react';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
@@ -61,6 +62,7 @@ export default function CreateCategoryForm({
       if (res.success) {
         onSuccess?.();
       } else {
+        applyFieldErrors(form.setError, res.error.fieldErrors, ['name', 'icon']);
         toast.error(res.error.message);
       }
     } catch (err) {

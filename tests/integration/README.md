@@ -44,9 +44,12 @@ links. OAuth account fixtures contain fake tokens to check that returned objects
 cannot expose account credentials. Only the test file mocks the `server-only`
 marker; production reads remain guarded by Next.js.
 
-Broader mutation validation, reporting arithmetic/timezone policy, report query
-limits, uncategorized-spending semantics, and budget category replacement remain
-separate backlog work.
+Mutation validation and database invariants are also covered. The validation
+suite exercises malformed direct action calls, monetary boundaries, Unicode
+text, raw SQL constraint failures, result limits, actual query cancellation, and
+legacy-schema migration/audit refusal and success. Reporting arithmetic/timezone
+policy, uncategorized-spending semantics, and budget category replacement remain
+separate backlog work. See [validation and rollout details](../../docs/validation.md).
 
 ## Read API
 
@@ -60,9 +63,10 @@ use their fixed provider allowlist.
   1–1,000,000 and page sizes to 1–100. Ordering is fixed with an ID tie-breaker.
 - `getCategories` and `getCategoryCount` cover the user's private categories.
   `getCategoryOptions` returns all owned/shared categories, with only ID, name,
-  and icon. The selectors intentionally do not truncate this list.
+  and icon. The selectors reject more than 1,000 visible categories rather than truncating.
 - Report reads and `getTransactionCount` accept only an optional `{ range:
-  { start: Date, end: Date } }`. Category and budget counts accept no filters.
+  { start: Date, end: Date } }`. Selected ranges are capped at five years; reports default to the last 12 months.
+  Category and budget counts accept no filters.
   Unknown Prisma keys, ownership overrides, and relation selections are rejected.
 - Decimal values stay on the server until presentation conversion. Financial
   reporting keeps its existing inclusive boundaries and weekly aggregation;
@@ -76,10 +80,9 @@ use their fixed provider allowlist.
 
 ## Verification on 2026-10-24
 
-- All 32 integration tests passed using isolated PostgreSQL 18.4 and Node 26.11.1.
+- All 51 integration tests passed using isolated PostgreSQL 18.4 and Node 26.11.1.
 - `pnpm exec tsc --noEmit` passed after Prisma/TypedSQL generation.
-- `pnpm run lint` passed with existing hook-dependency warnings in the date-range
-  picker and pagination component.
+- `pnpm run lint` passed with existing pagination hook-dependency warnings.
 - `pnpm run build` passed using the isolated database with the same existing
   hook-dependency warnings.
 - The production Server Action manifest contains only the nine financial
@@ -88,4 +91,6 @@ use their fixed provider allowlist.
 - Browser interaction with the OAuth-authenticated dialogs was not exercised;
   the manual checks above remain available for that verification.
 
-No schema migrations or commits were created.
+The new CHECK-constraint migration was applied only to the isolated test
+database and temporary legacy-schema fixtures. Application databases were not
+modified, and no commit was created.

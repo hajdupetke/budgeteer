@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "vercel-build": "prisma migrate deploy && prisma generate --sql && npx tsx prisma/seed.ts && next build",
-    "test:integration": "node scripts/test-integration.mjs"
+    "test:integration": "node scripts/test-integration.mjs",
+    "db:check-invariants": "node scripts/check-invariants.mjs"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.9.0",

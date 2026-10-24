@@ -14,30 +14,36 @@ import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 
 interface DateRangePickerProps {
   className?: string;
+  initialRange?: DateRange;
 }
 
-export const DateRangePicker = ({ className }: DateRangePickerProps) => {
+export const DateRangePicker = ({ className, initialRange }: DateRangePickerProps) => {
   const searchParams = useSearchParams();
-  const params = new URLSearchParams(searchParams);
+  const serializedParams = searchParams.toString();
+  const params = new URLSearchParams(serializedParams);
   const pathname = usePathname();
   const { replace } = useRouter();
   const startDate = params.get('startDate');
   const endDate = params.get('endDate');
 
   const validDate = (value: string | null) => {
+    if (!value) return undefined;
     const parsed = parseReportDateRange(value ?? undefined, value ?? undefined);
     return parsed.success ? parsed.data.range?.start : undefined;
   };
 
-  const [dateRange, setDateRange] = useState<DateRange>({
+  const [dateRange, setDateRange] = useState<DateRange>(initialRange ?? {
     from: validDate(startDate),
     to: validDate(endDate),
   });
   useEffect(() => {
-    if (dateRange.from) params.set('startDate', dateRange.from.toISOString());
-    if (dateRange.to) params.set('endDate', dateRange.to.toISOString());
-    replace(`${pathname}?${params.toString()}`);
-  }, [dateRange]);
+    const next = new URLSearchParams(serializedParams);
+    if (dateRange.from) next.set('startDate', dateRange.from.toISOString());
+    else next.delete('startDate');
+    if (dateRange.to) next.set('endDate', dateRange.to.toISOString());
+    else next.delete('endDate');
+    if (next.toString() !== serializedParams) replace(`${pathname}?${next.toString()}`);
+  }, [dateRange, serializedParams, pathname, replace]);
 
   return (
     <div className={cn('grid-gap-2', className)}>

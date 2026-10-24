@@ -64,7 +64,7 @@ beforeEach(async () => {
     const category = await db.transactionCategory.create({ data: { userId, name: 'Private category', icon: '🔒' } });
     categoryIds.push(category.id);
     const transaction = await db.transaction.create({ data: {
-      userId, name: 'Original transaction', amount: '10', timestamp: new Date('2025-01-01'), categoryId: category.id,
+      userId, name: 'Original transaction', amount: '10', timestamp: new Date(Date.now() - 30 * 86400000), categoryId: category.id,
     } });
     transactionIds.push(transaction.id);
     const budget = await db.budget.create({ data: {
@@ -99,6 +99,7 @@ const spyDatabaseAccess = () => [
         vi.spyOn(db[model as 'transaction'], method as 'count').mockImplementation(() => { throw new Error('Unexpected database access'); })
       )
     ),
+    vi.spyOn(db, '$transaction').mockImplementation(() => { throw new Error('Unexpected database access'); }),
     vi.spyOn(db, '$queryRawTyped').mockImplementation(() => { throw new Error('Unexpected database access'); }),
 ];
 
@@ -432,7 +433,7 @@ it('hides legacy cross-user category links without exposing private metadata', a
 it('normalizes URL pages and rejects invalid, partial, reversed or repeated report dates', () => {
   for (const value of [undefined, 'bad', '', '0', '-1', '1.2', '2abc', ['2'], '1000001']) expect(normalizePage(value)).toBe(1);
   expect(normalizePage('2')).toBe(2);
-  expect(parseReportDateRange(undefined, undefined)).toMatchObject({ success: true, data: { range: undefined } });
+  expect(parseReportDateRange(undefined, undefined)).toMatchObject({ success: true });
   const start = '2025-01-01T00:00:00.000Z';
   const end = '2025-01-02T00:00:00.000Z';
   expect(parseReportDateRange(start, end).success).toBe(true);

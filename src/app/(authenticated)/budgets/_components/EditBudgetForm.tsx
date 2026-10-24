@@ -1,6 +1,9 @@
 'use client';
 
+import type { BudgetWithCategory } from '@/types/budget';
+
 import { toast } from 'sonner';
+import { applyFieldErrors } from '@/lib/form-errors';
 
 import { useState } from 'react';
 import { updateBudget } from '@/lib/actions';
@@ -30,7 +33,7 @@ export default function EditBudgetForm({
 }: {
   onSuccess?: () => void;
   categories: { label: string; value: string }[];
-  budget: BudgetFormData;
+  budget: BudgetWithCategory;
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selected, setSelected] = useState<any[]>(budget.categoryIds);
@@ -41,13 +44,14 @@ export default function EditBudgetForm({
     defaultValues: {
       id: budget.id,
       name: budget.name,
-      max: budget.max,
+      max: budget.max.toFixed(2),
       categoryIds: budget.categoryIds,
     },
   });
 
   // Call server action when submitting form
   const onFormSubmit = async (values: BudgetFormData) => {
+    setIsSubmitting(true);
     try {
       const formData = new FormData();
       formData.append('name', values.name);
@@ -58,6 +62,7 @@ export default function EditBudgetForm({
       if (res.success) {
         onSuccess?.();
       } else {
+        applyFieldErrors(form.setError, res.error.fieldErrors, ['name', 'max', 'categoryIds']);
         toast.error(res.error.message);
       }
     } catch (err) {

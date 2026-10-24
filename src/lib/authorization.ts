@@ -10,7 +10,7 @@ export type MutationErrorCode =
 
 export type MutationResult =
   | { success: true }
-  | { success: false; error: { code: MutationErrorCode; message: string } };
+  | { success: false; error: { code: MutationErrorCode; message: string; fieldErrors?: Record<string, string[]> } };
 
 export class AuthenticationError extends Error {
   constructor() {
@@ -50,7 +50,11 @@ export const runMutation = async (
     if (error instanceof z.ZodError) {
       return {
         success: false,
-        error: { code: 'INVALID_INPUT', message: 'Invalid record or category identifiers.' },
+        error: {
+          code: 'INVALID_INPUT',
+          message: error.issues[0]?.message ?? 'Check the submitted fields.',
+          fieldErrors: Object.fromEntries(Object.entries(error.flatten().fieldErrors).filter((entry): entry is [string, string[]] => !!entry[1])),
+        },
       };
     }
     if (
