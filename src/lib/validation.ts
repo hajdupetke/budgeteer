@@ -63,3 +63,44 @@ export const BudgetSchema = z.object({
     .array(z.number())
     .min(1, 'Budget must have at least 1 category'),
 });
+
+
+/* Read inputs: callers cannot supply Prisma query options. */
+
+export const EmptyReadSchema = z.object({}).strict();
+export const PageSchema = z.number().int().min(1).max(1000000);
+export const paginationSchema = (defaultSize: number) => z.object({
+  page: PageSchema.default(1),
+  pageSize: z.number().int().min(1).max(100).default(defaultSize),
+}).strict();
+
+export const DateRangeSchema = z.object({
+  start: z.date(),
+  end: z.date(),
+}).strict().refine(({ start, end }) => start <= end, {
+  message: 'The start date must not follow the end date.',
+});
+export type DateRange = z.infer<typeof DateRangeSchema>;
+export const ReportReadSchema = z.object({ range: DateRangeSchema.optional() }).strict();
+export type ReportReadInput = z.input<typeof ReportReadSchema>;
+export type PageInput = { page?: number; pageSize?: number };
+
+export const normalizePage = (value: unknown) => {
+  const parsed = PageSchema.safeParse(
+    typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : value
+  );
+  return parsed.success ? parsed.data : 1;
+};
+
+const ReportDateParamSchema = z.string().datetime({ offset: true }).or(z.string().date());
+const ReportUrlSchema = z.object({
+  startDate: ReportDateParamSchema.optional(),
+  endDate: ReportDateParamSchema.optional(),
+}).strict().transform(({ startDate, endDate }) => ({
+  range: startDate === undefined && endDate === undefined
+    ? undefined
+    : { start: new Date(startDate ?? ''), end: new Date(endDate ?? '') },
+})).pipe(ReportReadSchema);
+
+export const parseReportDateRange = (startDate: unknown, endDate: unknown) =>
+  ReportUrlSchema.safeParse({ startDate, endDate });

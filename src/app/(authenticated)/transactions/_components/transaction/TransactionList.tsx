@@ -4,7 +4,8 @@ import { TransactionWithCategory } from '@/types/transaction';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import EditTransaction from './EditTransaction';
-import { TransactionCategory, TransactionType } from '@prisma/client';
+import type { CategoryOption } from '@/types/category';
+import { TransactionType } from '@prisma/client';
 import DeleteTransaction from './DeleteTransaction';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
@@ -13,7 +14,7 @@ const TransactionList = ({
   categories,
 }: {
   transactions: TransactionWithCategory[];
-  categories: TransactionCategory[];
+  categories: CategoryOption[];
 }) => {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);

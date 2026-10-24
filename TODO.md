@@ -23,16 +23,16 @@ claim, or attach the other's private records. Test shared category protections t
 
 ### Safe data access
 
-- [ ] Replace arbitrary caller-supplied Prisma options with narrow, validated
+- [x] Replace arbitrary caller-supplied Prisma options with narrow, validated
       inputs for pagination, filtering, and approved sorting.
-- [ ] Ensure caller filters cannot overwrite or weaken mandatory ownership filters.
-- [ ] Scope all count helpers to the authenticated user, including dashboard and
+- [x] Ensure caller filters cannot overwrite or weaken mandatory ownership filters.
+- [x] Scope all count helpers to the authenticated user, including dashboard and
       reports empty-state checks.
-- [ ] Move internal database read helpers out of the module-level `use server`
+- [x] Move internal database read helpers out of the module-level `use server`
       action surface into a `server-only` data access module.
-- [ ] Return explicit, minimal data objects; disallow arbitrary relation includes
+- [x] Return explicit, minimal data objects; disallow arbitrary relation includes
       and selections, especially user/account/token relations.
-- [ ] Review all exported Server Actions as externally callable boundaries
+- [x] Review all exported Server Actions as externally callable boundaries
 
 Acceptance: tests cover empty/foreign-user filters, attempted nested relation
 selection, counts, and unauthenticated calls. No financial records or account

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { TransactionCategory } from '@prisma/client';
+import type { CategoryOption } from '@/types/category';
 import {
   Dialog,
   DialogContent,
@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 const NewTransaction = ({
   categories,
 }: {
-  categories: TransactionCategory[];
+  categories: CategoryOption[];
 }) => {
   const [open, setOpen] = useState(false);
 

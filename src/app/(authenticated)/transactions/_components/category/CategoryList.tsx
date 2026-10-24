@@ -1,6 +1,6 @@
 'use client';
 
-import { TransactionCategory } from '@prisma/client';
+import type { CategoryOption } from '@/types/category';
 import { useState } from 'react';
 import EditCategory from './EditCategory';
 import DeleteCategory from './DeleteCategory';
@@ -9,10 +9,10 @@ import { Button } from '@/components/ui/button';
 const CategoryList = ({
   categories,
 }: {
-  categories: TransactionCategory[];
+  categories: CategoryOption[];
 }) => {
   const [editOpen, setEditOpen] = useState(false);
-  const [selected, setSelected] = useState<TransactionCategory>(categories[0]);
+  const [selected, setSelected] = useState<CategoryOption>(categories[0]);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   return (

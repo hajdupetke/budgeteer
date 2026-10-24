@@ -1,5 +1,5 @@
 import EditTransactionForm from './EditTransactionForm';
-import { TransactionCategory } from '@prisma/client';
+import type { CategoryOption } from '@/types/category';
 import { TransactionWithCategory } from '@/types/transaction';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
@@ -11,7 +11,7 @@ const EditTransaction = ({
   setOpen,
 }: {
   transaction: TransactionWithCategory;
-  categories: TransactionCategory[];
+  categories: CategoryOption[];
   open: boolean;
   setOpen: (bool: boolean) => void;
 }) => {

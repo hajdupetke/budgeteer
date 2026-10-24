@@ -1,12 +1,12 @@
 import {
   getExpense,
   getIncome,
-  getCategories,
+  getCategoryOptions,
   getExpensesByCategory,
   getExpenseVsIncome,
   getBudgetWithAmount,
   getTransactionCount,
-} from '@/lib/actions';
+} from '@/lib/data';
 import { auth } from '@/lib/auth';
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -39,37 +39,28 @@ export default async function Dashboard() {
   const oneMonthAgo = new Date();
   oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
   const now = new Date();
+  const range = { start: oneMonthAgo, end: now };
 
-  const income = await getIncome(oneMonthAgo, now);
-  const expense = await getExpense(oneMonthAgo, now);
+  const income = await getIncome({ range });
+  const expense = await getExpense({ range });
 
   const twoMonthsAgo = new Date(oneMonthAgo);
   twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 1);
 
-  const previousIncome = await getIncome(twoMonthsAgo, oneMonthAgo);
-  const previousExpense = await getExpense(twoMonthsAgo, oneMonthAgo);
+  const previousIncome = await getIncome({ range: { start: twoMonthsAgo, end: oneMonthAgo } });
+  const previousExpense = await getExpense({ range: { start: twoMonthsAgo, end: oneMonthAgo } });
 
-  const categories = await getCategories({
-    select: {
-      id: true,
-      name: true,
-    },
-  });
+  const categories = await getCategoryOptions();
 
-  const expensesByCategory = await getExpensesByCategory(
-    oneMonthAgo.toISOString(),
-    now.toISOString()
-  );
+  const expensesByCategory = await getExpensesByCategory({ range });
 
   const categoryExpenseChartData = expensesByCategory.map(
     (categoryExpense, index) => {
       const chartData = {
         category:
-          categories[
-            categories.findIndex((c) => c.id == categoryExpense.categoryId)
-          ].name,
-        sum: categoryExpense._sum.amount
-          ? categoryExpense._sum.amount.toNumber()
+          categories.find((c) => c.id === categoryExpense.categoryId)?.name ?? 'Uncategorized',
+        sum: categoryExpense.amount
+          ? categoryExpense.amount.toNumber()
           : 0,
         fill: `var(--chart-color-${index + 1})`,
       };
@@ -81,13 +72,20 @@ export default async function Dashboard() {
   /* 
       Maps over all of the user's budgets and then finds the corresponding categories expenses' and sums it all up
     */
-  const budgetWithAmount = await getBudgetWithAmount(expensesByCategory);
+  const budgetWithAmount = await getBudgetWithAmount({ range });
 
-  const incomeExpenseResponse = await getExpenseVsIncome(
-    'week',
-    oneMonthAgo.toISOString(),
-    now.toISOString()
-  );
+  const incomeExpenseResponse = await getExpenseVsIncome({ range });
+
+  const budgetChartData = budgetWithAmount.map((budget) => ({
+    name: budget.name,
+    max: budget.max.toNumber(),
+    amount: budget.amount.toNumber(),
+  }));
+  const incomeExpenseChartData = incomeExpenseResponse.map((row) => ({
+    period: row.period,
+    totalExpense: row.totalExpense?.toNumber(),
+    totalIncome: row.totalIncome?.toNumber(),
+  }));
 
   return (
     <div className="flex flex-col gap-2">
@@ -103,18 +101,18 @@ export default async function Dashboard() {
                 Your income over the past month
               </CardTitle>
               <div className="text-2xl font-extrabold">
-                {income._sum.amount?.toNumber()} EUR
+                {income.amount?.toNumber()} EUR
               </div>
             </CardContent>
-            {previousIncome._sum.amount && income._sum.amount && (
+            {previousIncome.amount && income.amount && (
               <CardFooter>
-                {previousIncome._sum.amount.toNumber() >=
-                income._sum.amount?.toNumber() ? (
+                {previousIncome.amount.toNumber() >=
+                income.amount?.toNumber() ? (
                   <div className="flex gap-2 items-center text-warning-900">
                     <TrendingDown /> Your income is down{' '}
                     {(
-                      previousIncome._sum.amount.toNumber() /
-                      income._sum.amount?.toNumber()
+                      previousIncome.amount.toNumber() /
+                      income.amount?.toNumber()
                     ).toFixed(2)}
                     % from previous month.
                   </div>
@@ -122,8 +120,8 @@ export default async function Dashboard() {
                   <div className="flex gap-2 items-center text-success-800">
                     <TrendingUp /> Your income is up{' '}
                     {(
-                      previousIncome._sum.amount.toNumber() /
-                      income._sum.amount?.toNumber()
+                      previousIncome.amount.toNumber() /
+                      income.amount?.toNumber()
                     ).toFixed(2)}
                     % from previous month.
                   </div>
@@ -135,18 +133,18 @@ export default async function Dashboard() {
             <CardContent className="flex flex-col justify-center gap-4 h-full">
               <CardTitle>Your expenses over the past month</CardTitle>
               <div className="text-2xl font-extrabold">
-                {expense._sum.amount?.toNumber()} EUR
+                {expense.amount?.toNumber()} EUR
               </div>
             </CardContent>
-            {previousExpense._sum.amount && expense._sum.amount && (
+            {previousExpense.amount && expense.amount && (
               <CardFooter>
-                {previousExpense._sum.amount.toNumber() >=
-                expense._sum.amount?.toNumber() ? (
+                {previousExpense.amount.toNumber() >=
+                expense.amount?.toNumber() ? (
                   <div className="flex gap-2 items-center text-success-800">
                     <TrendingDown /> Your expenses are down{' '}
                     {(
-                      previousExpense._sum.amount.toNumber() /
-                      expense._sum.amount?.toNumber()
+                      previousExpense.amount.toNumber() /
+                      expense.amount?.toNumber()
                     ).toFixed(2)}
                     % from previous month.
                   </div>
@@ -154,8 +152,8 @@ export default async function Dashboard() {
                   <div className="flex gap-2 items-center text-warning-900">
                     <TrendingUp /> Your expense is up{' '}
                     {(
-                      previousExpense._sum.amount.toNumber() /
-                      expense._sum.amount?.toNumber()
+                      previousExpense.amount.toNumber() /
+                      expense.amount?.toNumber()
                     ).toFixed(2)}
                     % from previous month.
                   </div>
@@ -165,8 +163,8 @@ export default async function Dashboard() {
           </Card>
         </div>
         <ExpensesByCategory chartData={categoryExpenseChartData} />
-        <BudgetCharts chartData={budgetWithAmount} />
-        <IncomeExpenseChart chartData={incomeExpenseResponse} />
+        <BudgetCharts chartData={budgetChartData} />
+        <IncomeExpenseChart chartData={incomeExpenseChartData} />
       </div>
     </div>
   );

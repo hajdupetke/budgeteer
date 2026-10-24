@@ -1,4 +1,4 @@
-# Authorization integration tests
+# Authorization and safe data access integration tests
 
 Use pnpm, a Node.js version supported by Vitest 5 (22.12–22.x, 24.x, or 26+), and an
 isolated PostgreSQL database whose name ends in `_test`. The
@@ -37,18 +37,54 @@ category dialogs. Successful mutations should refresh the relevant view. Failed
 submissions should display a generic error and should not trigger success
 callbacks. Confirm that shared categories remain available in selectors.
 
-This suite covers the record-ownership TODO section. Arbitrary read options,
-count isolation, broader input validation, and budget category replacement remain
+This suite covers the record-ownership and safe-data-access TODO sections.
+Read tests cover two-user isolation, empty-user counts, strict input rejection,
+minimal return fields, pagination, date ranges, and legacy cross-user category
+links. OAuth account fixtures contain fake tokens to check that returned objects
+cannot expose account credentials. Only the test file mocks the `server-only`
+marker; production reads remain guarded by Next.js.
+
+Broader mutation validation, reporting arithmetic/timezone policy, report query
+limits, uncategorized-spending semantics, and budget category replacement remain
 separate backlog work.
+
+## Read API
+
+All reads live in `src/lib/data.ts`, authenticate internally, and are available
+only to server code. They are not exported as Server Actions. The action module
+exports only the nine financial mutations and logout; inline OAuth actions still
+use their fixed provider allowlist.
+
+- `getTransactions`, `getCategories`, and `getBudgets` accept only `{ page,
+  pageSize }`. Defaults are 6, 10, and 8 rows respectively; pages are bounded to
+  1–1,000,000 and page sizes to 1–100. Ordering is fixed with an ID tie-breaker.
+- `getCategories` and `getCategoryCount` cover the user's private categories.
+  `getCategoryOptions` returns all owned/shared categories, with only ID, name,
+  and icon. The selectors intentionally do not truncate this list.
+- Report reads and `getTransactionCount` accept only an optional `{ range:
+  { start: Date, end: Date } }`. Category and budget counts accept no filters.
+  Unknown Prisma keys, ownership overrides, and relation selections are rejected.
+- Decimal values stay on the server until presentation conversion. Financial
+  reporting keeps its existing inclusive boundaries and weekly aggregation;
+  SQL date truncation and omitted uncategorized spending are unchanged.
+- Reports validate their date URL parameters once for counts and charts. ISO
+  timestamps and ISO calendar dates are accepted; partial, repeated, invalid,
+  and reversed ranges show an invalid-range message without report queries.
+- Legacy forbidden category links are hidden in transaction/budget results.
+  Category aggregate references that are no longer visible are returned as null
+  and receive a generic label, without private names or IDs.
 
 ## Verification on 2026-10-24
 
-- All 22 integration tests passed using isolated PostgreSQL 18.4 and Node 26.11.1.
+- All 32 integration tests passed using isolated PostgreSQL 18.4 and Node 26.11.1.
 - `pnpm exec tsc --noEmit` passed after Prisma/TypedSQL generation.
 - `pnpm run lint` passed with existing hook-dependency warnings in the date-range
   picker and pagination component.
 - `pnpm run build` passed using the isolated database with the same existing
   hook-dependency warnings.
+- The production Server Action manifest contains only the nine financial
+  mutations, logout, and the inline OAuth sign-in action; no data readers or list
+  components are exposed as actions.
 - Browser interaction with the OAuth-authenticated dialogs was not exercised;
   the manual checks above remain available for that verification.
 

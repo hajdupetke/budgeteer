@@ -1,6 +1,4 @@
-'use server';
-
-import { getCategories, getCategoryCount } from '@/lib/actions';
+import { getCategories, getCategoryCount } from '@/lib/data';
 import CategoryList from './CategoryList';
 import NewCategory from './NewCategory';
 import {
@@ -19,22 +17,9 @@ const Categories = async ({ page }: { page: number }) => {
   const session = await auth();
   if (!session?.user) return redirect('/sign-in');
 
-  const categoryCount = await getCategoryCount({
-    where: { userId: session.user.id },
-  });
+  const categoryCount = await getCategoryCount();
 
-  console.log('categori page', page);
-
-  const categories = await getCategories({
-    where: {
-      userId: session?.user.id,
-    },
-    skip: (page - 1) * CATEGORIES_PER_PAGE,
-    take: CATEGORIES_PER_PAGE,
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
+  const categories = await getCategories({ page, pageSize: CATEGORIES_PER_PAGE });
 
   return (
     <Card className="w-full py-4 gap-4">

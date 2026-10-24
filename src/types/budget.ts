@@ -1,10 +1,7 @@
-import { Prisma } from '@prisma/client';
-
-export type PrismaBudgetWithCategory = Prisma.BudgetGetPayload<{
-  include: { categories: { select: { name: true; id: true } } };
-}>;
-
-export type BudgetWithCategory = Omit<PrismaBudgetWithCategory, 'max'> & {
+export type BudgetWithCategory = {
+  id: number;
+  name: string;
   max: number;
+  categories: { id: number; name: string }[];
   categoryIds: number[];
 };

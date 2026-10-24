@@ -18,7 +18,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { TransactionCategory } from '@prisma/client';
+import type { CategoryOption } from '@/types/category';
 import {
   Select,
   SelectContent,
@@ -36,7 +36,7 @@ export default function CreateTransactionForm({
   categories,
 }: {
   onSuccess?: () => void;
-  categories: TransactionCategory[];
+  categories: CategoryOption[];
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [date, setDate] = useState<Date | undefined>(new Date());

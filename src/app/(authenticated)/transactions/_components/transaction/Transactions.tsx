@@ -1,12 +1,10 @@
-'use server';
 import TransactionList from './TransactionList';
-import { TransactionWithCategory } from '@/types/transaction';
 import NewTransaction from './NewTransaction';
 import {
   getTransactionCount,
   getTransactions,
-  getCategories,
-} from '@/lib/actions';
+  getCategoryOptions,
+} from '@/lib/data';
 import {
   Card,
   CardContent,
@@ -24,31 +22,16 @@ const Transactions = async ({ page }: { page: number }) => {
 
   if (!session?.user) redirect('/sign-in');
 
-  const transactionCount = await getTransactionCount({
-    where: { userId: session.user.id },
-  });
+  const transactionCount = await getTransactionCount();
 
-  const categories = await getCategories();
+  const categories = await getCategoryOptions();
 
   const transactions = (
-    await getTransactions({
-      include: {
-        category: {
-          select: {
-            icon: true,
-          },
-        },
-      },
-      skip: (page - 1) * TRANSACTION_ITEMS_PER_PAGE,
-      take: TRANSACTION_ITEMS_PER_PAGE,
-      orderBy: {
-        timestamp: 'desc',
-      },
-    })
+    await getTransactions({ page, pageSize: TRANSACTION_ITEMS_PER_PAGE })
   ).map((transaction) => ({
     ...transaction,
     amount: transaction.amount.toNumber(),
-  })) as TransactionWithCategory[];
+  }));
 
   return (
     <Card className="size-full py-4 gap-4">

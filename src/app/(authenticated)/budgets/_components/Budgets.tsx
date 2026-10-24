@@ -1,9 +1,6 @@
-'use server';
-
-import { BudgetWithCategory, PrismaBudgetWithCategory } from '@/types/budget';
 import BudgetList from './BudgetList';
 import NewBudget from './NewBudget';
-import { getCategories, getBudgets, getBudgetCount } from '@/lib/actions';
+import { getCategoryOptions, getBudgets, getBudgetCount } from '@/lib/data';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 
@@ -14,34 +11,21 @@ const Budgets = async ({ page }: { page: number }) => {
   if (!session?.user) return redirect('/sign-in');
 
   const categories = (
-    await getCategories({
-      select: {
-        id: true,
-        name: true,
-      },
-    })
+    await getCategoryOptions()
   ).map((category) => ({
     value: category.id,
     label: category.name,
   }));
 
-  const fetchedBudgets = (await getBudgets({
-    include: { categories: { select: { name: true, id: true } } },
-    skip: (page - 1) * BUDGETS_PER_PAGE,
-    take: BUDGETS_PER_PAGE,
-  })) as PrismaBudgetWithCategory[];
+  const fetchedBudgets = await getBudgets({ page, pageSize: BUDGETS_PER_PAGE });
 
   const budgets = fetchedBudgets.map((budget) => ({
     ...budget,
     max: budget.max.toNumber(),
     categoryIds: budget.categories.map((category) => category.id),
-  })) as BudgetWithCategory[];
+  }));
 
-  const budgetCount = await getBudgetCount({
-    where: { userId: session.user.id },
-  });
-
-  console.log(budgetCount);
+  const budgetCount = await getBudgetCount();
 
   return (
     <div className="w-full">

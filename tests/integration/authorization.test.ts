@@ -4,9 +4,12 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 const mocks = vi.hoisted(() => ({ auth: vi.fn(), revalidatePath: vi.fn() }));
 vi.mock('@/lib/auth', () => ({ auth: mocks.auth, signOut: vi.fn() }));
 vi.mock('next/cache', () => ({ revalidatePath: mocks.revalidatePath }));
+vi.mock('server-only', () => ({}));
 
 import { db } from '@/lib/db';
 import * as actions from '@/lib/actions';
+import * as data from '@/lib/data';
+import { normalizePage, parseReportDateRange } from '@/lib/validation';
 
 if (!process.env.TEST_DATABASE_URL || process.env.DATABASE_URL !== process.env.TEST_DATABASE_URL) {
   throw new Error('Run with pnpm test:integration and an isolated TEST_DATABASE_URL.');
@@ -29,6 +32,7 @@ const unavailable = {
 };
 
 const userIds = [randomUUID(), randomUUID()];
+const emptyUserId = randomUUID();
 let sharedId: number;
 let missingId: number;
 let categoryIds: number[];
@@ -37,7 +41,11 @@ let budgetIds: number[];
 const signIn = (index: number) => mocks.auth.mockResolvedValue({ user: { id: userIds[index] } });
 
 beforeAll(async () => {
-  await db.user.createMany({ data: userIds.map((id) => ({ id, email: `${id}@authorization.test` })) });
+  await db.user.createMany({ data: [...userIds, emptyUserId].map((id) => ({ id, email: `${id}@authorization.test` })) });
+  await db.account.createMany({ data: userIds.map((userId) => ({
+    userId, type: 'oauth', provider: 'test', providerAccountId: userId,
+    access_token: 'private-access-token', refresh_token: 'private-refresh-token',
+  })) });
   const shared = await db.transactionCategory.create({ data: { name: 'Shared test category', icon: '🌍' } });
   sharedId = shared.id;
   const missing = await db.transactionCategory.create({ data: { name: 'Deleted fixture', icon: '🌍' } });
@@ -74,7 +82,7 @@ afterEach(() => {
 });
 
 afterAll(async () => {
-  await db.user.deleteMany({ where: { id: { in: userIds } } });
+  await db.user.deleteMany({ where: { id: { in: [...userIds, emptyUserId] } } });
   if (sharedId) await db.transactionCategory.deleteMany({ where: { id: sharedId, userId: null } });
   await db.$disconnect();
 });
@@ -84,6 +92,15 @@ const snapshot = async () => ({
   budgets: await db.budget.findMany({ where: { userId: { in: userIds } }, include: { categories: { orderBy: { id: 'asc' } } }, orderBy: { id: 'asc' } }),
   categories: await db.transactionCategory.findMany({ where: { OR: [{ userId: { in: userIds } }, { id: sharedId }] }, orderBy: { id: 'asc' } }),
 });
+
+const spyDatabaseAccess = () => [
+    ...['transaction', 'transactionCategory', 'budget'].flatMap((model) =>
+      ['create', 'update', 'delete', 'findMany', 'count', 'aggregate', 'groupBy'].map((method) =>
+        vi.spyOn(db[model as 'transaction'], method as 'count').mockImplementation(() => { throw new Error('Unexpected database access'); })
+      )
+    ),
+    vi.spyOn(db, '$queryRawTyped').mockImplementation(() => { throw new Error('Unexpected database access'); }),
+];
 
 for (const actor of [0, 1]) {
   describe(`authenticated user ${actor + 1}`, () => {
@@ -128,7 +145,7 @@ for (const actor of [0, 1]) {
 
     it('reads shared categories but cannot edit or delete them', async () => {
       signIn(actor);
-      const categories = await actions.getCategories();
+      const categories = await data.getCategoryOptions();
       expect(categories.map((category) => category.id)).toContain(sharedId);
       expect(categories.map((category) => category.id)).not.toContain(categoryIds[1 - actor]);
       expect(await actions.updateTransactionCategory(categoryForm(), sharedId)).toEqual(unavailable);
@@ -201,24 +218,17 @@ it('guards every protected action before querying data or parsing inputs', async
     () => actions.deleteBudget(budgetIds[0]),
   ];
   const reads = [
-    () => actions.getCategoryCount(), () => actions.getCategories(),
-    () => actions.getTransactionCount(), () => actions.getTransactions(),
-    () => actions.getBudgetCount(), () => actions.getBudgets(),
-    () => actions.getExpenseVsIncome('month'),
-    () => actions.getIncome(new Date(), new Date()),
-    () => actions.getExpense(new Date(), new Date()),
-    () => actions.getBudgetWithAmount([]),
-    () => actions.getExpensesByCategory('', ''),
+    () => data.getCategoryCount(), () => data.getCategories(), () => data.getCategoryOptions(),
+    () => data.getTransactionCount(), () => data.getTransactions(),
+    () => data.getBudgetCount(), () => data.getBudgets(),
+    () => data.getExpenseVsIncome(),
+    () => data.getIncome(),
+    () => data.getExpense(),
+    () => data.getBudgetWithAmount(),
+    () => data.getExpensesByCategory(),
   ];
   // Intercept database entry points only in this boundary test: any access is a failure.
-  const spies = [
-    ...['transaction', 'transactionCategory', 'budget'].flatMap((model) =>
-      ['create', 'update', 'delete', 'findMany', 'count', 'aggregate', 'groupBy'].map((method) =>
-        vi.spyOn(db[model as 'transaction'], method as 'count').mockImplementation(() => { throw new Error('Unexpected database access'); })
-      )
-    ),
-    vi.spyOn(db, '$queryRawTyped').mockImplementation(() => { throw new Error('Unexpected database access'); }),
-  ];
+  const spies = spyDatabaseAccess();
   try {
     for (const session of [null, {}, { user: {} }, ...[undefined, null, '', '  ', 123].map((id) => ({ user: { id } }))]) {
       mocks.auth.mockResolvedValue(session);
@@ -283,4 +293,158 @@ it.each([
   expect(console.error).toHaveBeenCalledExactlyOnceWith('Cache revalidation failed after mutation', {
     event: 'cache_revalidation_failed', path,
   });
+});
+
+for (const actor of [0, 1]) {
+  it(`isolates all default reads and counts for user ${actor + 1}`, async () => {
+    signIn(actor);
+    expect((await data.getTransactions()).map((row) => row.id)).toEqual([transactionIds[actor]]);
+    expect((await data.getBudgets()).map((row) => row.id)).toEqual([budgetIds[actor]]);
+    expect((await data.getCategories()).map((row) => row.id)).toEqual([categoryIds[actor]]);
+    expect((await data.getCategoryOptions()).map((row) => row.id).sort()).toEqual([categoryIds[actor], sharedId].sort());
+    expect(await data.getTransactionCount({})).toBe(1);
+    expect(await data.getCategoryCount({})).toBe(1);
+    expect(await data.getBudgetCount({})).toBe(1);
+    expect((await data.getIncome()).amount?.toString()).toBe('10');
+    expect((await data.getExpense()).amount).toBeNull();
+    expect(await data.getExpensesByCategory()).toEqual([]);
+    expect((await data.getBudgetWithAmount()).map((row) => row.amount.toString())).toEqual(['0']);
+    const series = await data.getExpenseVsIncome();
+    expect(series.map((row) => row.totalIncome?.toString())).toEqual(['10']);
+  });
+}
+
+it('returns explicit minimal fields and never returns account credentials or user objects', async () => {
+  const [transaction] = await data.getTransactions();
+  const [budget] = await data.getBudgets();
+  const [category] = await data.getCategories();
+  const [option] = await data.getCategoryOptions();
+  expect(Object.keys(transaction).sort()).toEqual(['id', 'name', 'amount', 'timestamp', 'type', 'categoryId', 'category'].sort());
+  expect(Object.keys(transaction.category!).sort()).toEqual(['icon']);
+  expect(Object.keys(budget).sort()).toEqual(['id', 'name', 'max', 'categories'].sort());
+  expect(Object.keys(budget.categories[0]).sort()).toEqual(['id', 'name']);
+  for (const row of [category, option]) expect(Object.keys(row).sort()).toEqual(['id', 'name', 'icon'].sort());
+  expect(Object.keys(await data.getIncome())).toEqual(['amount']);
+  const serialized = JSON.stringify([transaction, budget, category, option, await data.getExpenseVsIncome()]);
+  for (const forbidden of ['userId', 'accounts', 'sessions', 'access_token', 'refresh_token', 'private-access-token', 'private-refresh-token']) {
+    expect(serialized).not.toContain(forbidden);
+  }
+});
+
+it('rejects Prisma options and ownership overrides in every read before any query', async () => {
+  const reads = Object.values(data) as unknown as ((input?: unknown) => Promise<unknown>)[];
+  const spies = spyDatabaseAccess();
+  try {
+    for (const input of [
+      { userId: userIds[1] }, { where: {} }, { where: { userId: userIds[1] } },
+      { where: { OR: [{ userId: userIds[1] }, {}] } },
+      { select: { user: { include: { accounts: true, sessions: true } } } },
+      { include: { user: { select: { accounts: { select: { access_token: true, refresh_token: true } } } } } },
+      { orderBy: { user: { email: 'asc' } } }, { take: 1000000 }, { skip: -1 },
+      { step: 'month' }, null, [],
+      { range: { start: new Date(), end: new Date(), userId: userIds[1] } },
+    ]) {
+      for (const read of reads) await expect(read(input)).rejects.toThrow();
+    }
+    for (const spy of spies) expect(spy).not.toHaveBeenCalled();
+  } finally {
+    for (const spy of spies) spy.mockRestore();
+  }
+});
+
+it('validates bounded pagination and applies a stable ID tie-breaker', async () => {
+  const createdAt = new Date('2025-01-01T00:00:00Z');
+  const timestamp = new Date('2025-01-01T12:00:00Z');
+  await db.transaction.update({ where: { id: transactionIds[0] }, data: { timestamp } });
+  await db.transactionCategory.update({ where: { id: categoryIds[0] }, data: { createdAt } });
+  await db.budget.update({ where: { id: budgetIds[0] }, data: { createdAt } });
+  const category = await db.transactionCategory.create({ data: { userId: userIds[0], name: 'Second', icon: '🌱', createdAt } });
+  const budget = await db.budget.create({ data: { userId: userIds[0], name: 'Second', max: '100', createdAt } });
+  const transaction = await db.transaction.create({ data: { userId: userIds[0], name: 'Second', amount: '20', timestamp } });
+  for (const [read, ids] of [
+    [data.getTransactions, [transaction.id, transactionIds[0]]],
+    [data.getCategories, [category.id, categoryIds[0]]],
+    [data.getBudgets, [budget.id, budgetIds[0]]],
+  ] as const) {
+    expect((await read({ page: 1, pageSize: 1 })).map((row) => row.id)).toEqual([ids[0]]);
+    expect((await read({ page: 2, pageSize: 1 })).map((row) => row.id)).toEqual([ids[1]]);
+    expect(await read({ page: 3, pageSize: 1 })).toEqual([]);
+    for (const input of [{ page: 0 }, { page: -1 }, { page: 1.5 }, { page: NaN }, { page: 1000001 }, { pageSize: 0 }, { pageSize: 101 }]) {
+      await expect(read(input)).rejects.toThrow();
+    }
+  }
+});
+
+it('validates report ranges and uses scoped ranges consistently across counts and totals', async () => {
+  const start = new Date('2025-01-01T00:00:00Z');
+  const end = new Date('2025-01-02T00:00:00Z');
+  await db.transaction.update({ where: { id: transactionIds[0] }, data: { type: 'EXPENSE', timestamp: start } });
+  await db.transaction.update({ where: { id: transactionIds[1] }, data: { type: 'EXPENSE', amount: '9999', timestamp: start } });
+  await db.transaction.create({ data: { userId: userIds[0], name: 'Outside range', amount: '200', timestamp: new Date('2024-01-01'), type: 'EXPENSE' } });
+  const parsed = parseReportDateRange(start.toISOString(), end.toISOString());
+  expect(parsed.success).toBe(true);
+  if (!parsed.success) throw new Error('Expected valid range');
+  const input = parsed.data;
+  expect(await data.getTransactionCount(input)).toBe(1);
+  expect((await data.getExpense(input)).amount?.toString()).toBe('10');
+  expect((await data.getExpensesByCategory(input)).map((row) => [row.categoryId, row.amount.toString()])).toEqual([[categoryIds[0], '10']]);
+  expect((await data.getBudgetWithAmount(input)).map((row) => row.amount.toString())).toEqual(['10']);
+  expect((await data.getExpenseVsIncome(input)).map((row) => row.totalExpense?.toString())).toEqual(['10']);
+  const reports = [data.getTransactionCount, data.getIncome, data.getExpense, data.getExpensesByCategory, data.getBudgetWithAmount, data.getExpenseVsIncome];
+  const spies = spyDatabaseAccess();
+  try {
+    for (const range of [{ start: end, end: start }, { start: new Date('bad'), end }, { start }, { start: start.toISOString(), end: end.toISOString() }]) {
+      for (const read of reports) await expect(read({ range } as never)).rejects.toThrow();
+    }
+    for (const spy of spies) expect(spy).not.toHaveBeenCalled();
+  } finally {
+    for (const spy of spies) spy.mockRestore();
+  }
+});
+
+it('returns empty results for a user without financial data even when another user has data', async () => {
+  mocks.auth.mockResolvedValue({ user: { id: emptyUserId } });
+  expect(await data.getTransactionCount()).toBe(0);
+  expect(await data.getTransactionCount({ range: { start: new Date('2024-01-01'), end: new Date('2026-01-01') } })).toBe(0);
+  expect(await data.getBudgetCount()).toBe(0);
+  expect(await data.getCategoryCount()).toBe(0);
+  for (const read of [data.getTransactions, data.getBudgets, data.getCategories, data.getExpensesByCategory, data.getExpenseVsIncome, data.getBudgetWithAmount]) {
+    expect(await read()).toEqual([]);
+  }
+  expect((await data.getCategoryOptions()).map((row) => row.id)).toContain(sharedId);
+  expect(await data.getIncome()).toEqual({ amount: null });
+  expect(await data.getExpense()).toEqual({ amount: null });
+});
+
+it('hides legacy cross-user category links without exposing private metadata', async () => {
+  await db.transaction.update({ where: { id: transactionIds[0] }, data: { categoryId: categoryIds[1], type: 'EXPENSE' } });
+  await db.budget.update({ where: { id: budgetIds[0] }, data: { categories: { connect: { id: categoryIds[1] } } } });
+  const [transaction] = await data.getTransactions();
+  expect(transaction.category).toBeNull();
+  expect(transaction.categoryId).toBeNull();
+  const [budget] = await data.getBudgets();
+  expect(budget.categories.map((row) => row.id)).toEqual([categoryIds[0]]);
+  const expenses = await data.getExpensesByCategory();
+  expect(expenses.map((row) => [row.categoryId, row.amount.toString()])).toEqual([[null, '10']]);
+  expect((await data.getBudgetWithAmount())[0].amount.toString()).toBe('0');
+});
+
+it('normalizes URL pages and rejects invalid, partial, reversed or repeated report dates', () => {
+  for (const value of [undefined, 'bad', '', '0', '-1', '1.2', '2abc', ['2'], '1000001']) expect(normalizePage(value)).toBe(1);
+  expect(normalizePage('2')).toBe(2);
+  expect(parseReportDateRange(undefined, undefined)).toMatchObject({ success: true, data: { range: undefined } });
+  const start = '2025-01-01T00:00:00.000Z';
+  const end = '2025-01-02T00:00:00.000Z';
+  expect(parseReportDateRange(start, end).success).toBe(true);
+  expect(parseReportDateRange('2025-01-01', '2025-01-02').success).toBe(true);
+  for (const args of [[start, undefined], [undefined, end], ['bad', end], [end, start], [[start], end], ['', ''], ['2025-02-30T00:00:00.000Z', end]]) {
+    expect(parseReportDateRange(...args as [unknown, unknown]).success).toBe(false);
+  }
+});
+
+it('keeps the financial Server Action surface limited to mutations and logout', () => {
+  expect(Object.keys(actions).sort()).toEqual([
+    'logOut', 'createTransactionCategory', 'updateTransactionCategory', 'deleteTransactionCategory',
+    'createTransaction', 'updateTransaction', 'deleteTransaction', 'createBudget', 'updateBudget', 'deleteBudget',
+  ].sort());
 });

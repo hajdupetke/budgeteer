@@ -9,6 +9,7 @@ import { DateRange } from 'react-day-picker';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
+import { parseReportDateRange } from '@/lib/validation';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 
 interface DateRangePickerProps {
@@ -23,9 +24,14 @@ export const DateRangePicker = ({ className }: DateRangePickerProps) => {
   const startDate = params.get('startDate');
   const endDate = params.get('endDate');
 
+  const validDate = (value: string | null) => {
+    const parsed = parseReportDateRange(value ?? undefined, value ?? undefined);
+    return parsed.success ? parsed.data.range?.start : undefined;
+  };
+
   const [dateRange, setDateRange] = useState<DateRange>({
-    from: startDate ? new Date(startDate) : undefined,
-    to: endDate ? new Date(endDate) : undefined,
+    from: validDate(startDate),
+    to: validDate(endDate),
   });
   useEffect(() => {
     if (dateRange.from) params.set('startDate', dateRange.from.toISOString());

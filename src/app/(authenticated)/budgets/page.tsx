@@ -1,3 +1,4 @@
+import { normalizePage } from '@/lib/validation';
 import { Metadata } from 'next';
 import Budgets from './_components/Budgets';
 
@@ -10,11 +11,11 @@ export default async function BudgetsPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const page = (await searchParams).page as string;
+  const page = normalizePage((await searchParams).page);
 
   return (
     <>
-      <Budgets page={page != undefined ? Number.parseInt(page) : 1} />
+      <Budgets page={page} />
     </>
   );
 }

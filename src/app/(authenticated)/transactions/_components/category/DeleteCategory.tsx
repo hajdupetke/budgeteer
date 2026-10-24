@@ -1,4 +1,4 @@
-import { TransactionCategory } from '@prisma/client';
+import type { CategoryOption } from '@/types/category';
 import { Button } from '@/components/ui/button';
 import { deleteTransactionCategory } from '@/lib/actions';
 import {
@@ -14,7 +14,7 @@ const DeleteCategory = ({
   open,
   setOpen,
 }: {
-  category: TransactionCategory;
+  category: CategoryOption;
   open: boolean;
   setOpen: (bool: boolean) => void;
 }) => {

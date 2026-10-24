@@ -1,28 +1,11 @@
-import { Prisma } from '@prisma/client';
+import type { TransactionType } from '@prisma/client';
 
-type PrismaTransactionWithCategory = Prisma.TransactionGetPayload<{
-  include: {
-    category: {
-      select: {
-        icon: true;
-      };
-    };
-  };
-}>;
-
-export type TransactionWithCategory = Omit<
-  PrismaTransactionWithCategory,
-  'amount'
-> & {
+export type TransactionWithCategory = {
+  id: number;
+  name: string;
   amount: number;
-};
-
-type PrimsaReportTransactions = Prisma.TransactionGetPayload<{
-  include: {
-    category: true;
-  };
-}>;
-
-export type ReportTransactions = Omit<PrimsaReportTransactions, 'amount'> & {
-  amount: number;
+  timestamp: Date;
+  type: TransactionType;
+  categoryId: number | null;
+  category: { icon: string } | null;
 };
