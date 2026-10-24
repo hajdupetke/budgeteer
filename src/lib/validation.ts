@@ -1,4 +1,24 @@
 import { z } from 'zod';
+
+// Prisma Int identifiers are signed 32-bit integers.
+export const RecordIdSchema = z.number().int().positive().max(2147483647);
+
+export const parseCategoryId = (value: FormDataEntryValue | null) =>
+  RecordIdSchema.parse(Number(z.string().parse(value)));
+
+export const parseBudgetCategoryIds = (value: FormDataEntryValue | null) => {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(z.string().parse(value));
+  } catch {
+    throw new z.ZodError([
+      { code: 'custom', path: ['categoryIds'], message: 'Invalid categories.' },
+    ]);
+  }
+  const ids = z.array(RecordIdSchema).min(1).parse(parsed);
+  return [...new Set(ids)];
+};
+
 /* TransactionCategory Schema */
 
 export const TransactionCategorySchema = z.object({

@@ -1,5 +1,7 @@
 'use client';
 
+import { toast } from 'sonner';
+
 import { useState } from 'react';
 import { createTransaction } from '@/lib/actions';
 import { TransactionSchema } from '@/lib/validation';
@@ -64,7 +66,11 @@ export default function CreateTransactionForm({
         formData.append('timestamp', new Date(values.timestamp).toString());
       const res = await createTransaction(formData);
       // if response is good run onSuccess function
-      if (res.success && onSuccess) onSuccess();
+      if (res.success) {
+        onSuccess?.();
+      } else {
+        toast.error(res.error.message);
+      }
     } catch (err) {
       console.log(err);
     } finally {

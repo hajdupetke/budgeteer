@@ -42,6 +42,8 @@ const DeleteTransaction = ({
               if (res.success) {
                 setOpen(false);
                 toast.success('Transaction successfully deleted!');
+              } else {
+                toast.error(res.error.message);
               }
             }}
             className="bg-warning-600! font-bold hover:bg-warning-800! cursor-pointer"

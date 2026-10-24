@@ -3,11 +3,32 @@ import { redirect } from 'next/navigation';
 import { signOut } from './auth';
 import { db } from './db';
 import { revalidatePath } from 'next/cache';
-import { auth } from './auth';
+import {
+  requireUserId,
+  runMutation,
+  categoryConnection,
+} from './authorization';
+import type { MutationResult } from './authorization';
+import { RecordIdSchema, parseCategoryId, parseBudgetCategoryIds } from './validation';
 import { Prisma } from '@prisma/client';
 import { TransactionType } from '@prisma/client';
 import { incomeExpense } from '@prisma/client/sql';
 import { PrismaBudgetWithCategory } from '@/types/budget';
+
+// A failed refresh must not turn a committed write into a failed save response.
+const revalidateMutation = (result: MutationResult, path: string): MutationResult => {
+  if (result.success) {
+    try {
+      revalidatePath(path);
+    } catch {
+      console.error('Cache revalidation failed after mutation', {
+        event: 'cache_revalidation_failed',
+        path,
+      });
+    }
+  }
+  return result;
+};
 
 export const logOut = async () => {
   await signOut();
@@ -17,32 +38,25 @@ export const logOut = async () => {
 /* Create new TransactionCategory */
 
 export const createTransactionCategory = async (formData: FormData) => {
-  const icon = formData.get('icon') as string;
-  const name = formData.get('name') as string;
-  const session = await auth();
+  const result = await runMutation('createTransactionCategory', async (userId) => {
+    const icon = formData.get('icon') as string;
+    const name = formData.get('name') as string;
 
-  // return false if user not logged in
-  if (!session?.user) return { success: false };
-
-  await db.transactionCategory.create({
-    data: {
-      icon,
-      name,
-      user: {
-        connect: { id: session.user.id },
+    await db.transactionCategory.create({
+      data: {
+        icon,
+        name,
+        user: {
+          connect: { id: userId },
+        },
       },
-    },
+    });
   });
-
-  revalidatePath('/transactions');
-  return { success: true };
+  return revalidateMutation(result, '/transactions');
 };
 
 export const getCategoryCount = async (dbOptions = {}) => {
-  const session = await auth();
-
-  // return false if user not logged in
-  if (!session?.user) throw new Error('User not logged in!');
+  await requireUserId();
 
   const count = await db.transactionCategory.count(dbOptions);
   return count;
@@ -54,51 +68,42 @@ export const updateTransactionCategory = async (
   formData: FormData,
   categoryId: number
 ) => {
-  const icon = formData.get('icon') as string;
-  const name = formData.get('name') as string;
-  const session = await auth();
+  const result = await runMutation('updateTransactionCategory', async (userId) => {
+    const icon = formData.get('icon') as string;
+    const name = formData.get('name') as string;
 
-  // return false if user not logged in
-  if (!session?.user) return { success: false };
-
-  await db.transactionCategory.update({
-    where: {
-      id: categoryId,
-    },
-    data: {
-      icon,
-      name,
-    },
+    await db.transactionCategory.update({
+      where: {
+        id: RecordIdSchema.parse(categoryId),
+        userId,
+      },
+      data: {
+        icon,
+        name,
+      },
+    });
   });
-
-  revalidatePath('/transactions');
-  return { success: true };
+  return revalidateMutation(result, '/transactions');
 };
 
 /* Delete TransactionCategory by id */
 
 export const deleteTransactionCategory = async (categoryId: number) => {
-  const session = await auth();
-
-  // return false if user not logged in
-  if (!session?.user) return { success: false };
-
-  await db.transactionCategory.delete({ where: { id: categoryId } });
-
-  revalidatePath('/transactions');
-  return { success: true };
+  const result = await runMutation('deleteTransactionCategory', async (userId) => {
+    await db.transactionCategory.delete({
+      where: { id: RecordIdSchema.parse(categoryId), userId },
+    });
+  });
+  return revalidateMutation(result, '/transactions');
 };
 
 /* Get TransactionCategories for user */
 
 export const getCategories = async (dbOptions = {}) => {
-  const session = await auth();
-
-  // return false if user not logged in
-  if (!session?.user) throw new Error('User not logged in');
+  const userId = await requireUserId();
 
   const categories = await db.transactionCategory.findMany({
-    where: { OR: [{ userId: session.user.id }, { userId: null }] },
+    where: { OR: [{ userId }, { userId: null }] },
     ...dbOptions,
   });
 
@@ -108,36 +113,29 @@ export const getCategories = async (dbOptions = {}) => {
 /* Create a new transaction */
 
 export const createTransaction = async (formData: FormData) => {
-  const name = formData.get('name') as string;
-  const amount = Number.parseFloat(formData.get('amount') as string);
-  const categoryId = Number.parseInt(formData.get('categoryId') as string);
-  const dateStr = formData.get('timestamp') as string;
-  const transactionType = formData.get('transactionType') as string;
-  const session = await auth();
+  const result = await runMutation('createTransaction', async (userId) => {
+    const name = formData.get('name') as string;
+    const amount = Number.parseFloat(formData.get('amount') as string);
+    const categoryId = parseCategoryId(formData.get('categoryId'));
+    const dateStr = formData.get('timestamp') as string;
+    const transactionType = formData.get('transactionType') as string;
 
-  if (!session?.user) return { success: false };
-
-  await db.transaction.create({
-    data: {
-      name,
-      amount: new Prisma.Decimal(amount),
-      timestamp: new Date(dateStr),
-      type: TransactionType[transactionType as keyof typeof TransactionType],
-      category: {
-        connect: {
-          id: categoryId,
+    await db.transaction.create({
+      data: {
+        name,
+        amount: new Prisma.Decimal(amount),
+        timestamp: new Date(dateStr),
+        type: TransactionType[transactionType as keyof typeof TransactionType],
+        category: { connect: categoryConnection(categoryId, userId) },
+        user: {
+          connect: {
+            id: userId,
+          },
         },
       },
-      user: {
-        connect: {
-          id: session.user.id,
-        },
-      },
-    },
+    });
   });
-
-  revalidatePath('/transactions');
-  return { success: true };
+  return revalidateMutation(result, '/transactions');
 };
 
 /* Update existing transaction */
@@ -146,64 +144,47 @@ export const updateTransaction = async (
   formData: FormData,
   transactionId: number
 ) => {
-  const name = formData.get('name') as string;
-  const amount = Number.parseFloat(formData.get('amount') as string);
-  const categoryId = Number.parseInt(formData.get('categoryId') as string);
-  const dateStr = formData.get('timestamp') as string;
-  const transactionType = formData.get('transactionType') as string;
-  const session = await auth();
+  const result = await runMutation('updateTransaction', async (userId) => {
+    const name = formData.get('name') as string;
+    const amount = Number.parseFloat(formData.get('amount') as string);
+    const categoryId = parseCategoryId(formData.get('categoryId'));
+    const dateStr = formData.get('timestamp') as string;
+    const transactionType = formData.get('transactionType') as string;
 
-  if (!session?.user) return { success: false };
-
-  await db.transaction.update({
-    where: {
-      id: transactionId,
-    },
-    data: {
-      name,
-      amount: new Prisma.Decimal(amount),
-      timestamp: new Date(dateStr),
-      type: TransactionType[transactionType as keyof typeof TransactionType],
-      category: {
-        connect: {
-          id: categoryId,
-        },
+    await db.transaction.update({
+      where: {
+        id: RecordIdSchema.parse(transactionId),
+        userId,
       },
-      user: {
-        connect: {
-          id: session.user.id,
-        },
+      data: {
+        name,
+        amount: new Prisma.Decimal(amount),
+        timestamp: new Date(dateStr),
+        type: TransactionType[transactionType as keyof typeof TransactionType],
+        category: { connect: categoryConnection(categoryId, userId) },
       },
-    },
+    });
   });
-
-  revalidatePath('/transactions');
-  return { success: true };
+  return revalidateMutation(result, '/transactions');
 };
 
 export const deleteTransaction = async (transactionId: number) => {
-  const session = await auth();
-
-  // return false if user not logged in
-  if (!session?.user) return { success: false };
-
-  await db.transaction.delete({
-    where: {
-      id: transactionId,
-    },
+  const result = await runMutation('deleteTransaction', async (userId) => {
+    await db.transaction.delete({
+      where: {
+        id: RecordIdSchema.parse(transactionId),
+        userId,
+      },
+    });
   });
-
-  revalidatePath('/transactions');
-  return { success: true };
+  return revalidateMutation(result, '/transactions');
 };
 
 export const getTransactions = async (dbOptions = {}) => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User is not logged in!');
+  const userId = await requireUserId();
 
   const transactions = await db.transaction.findMany({
-    where: { userId: session.user.id },
+    where: { userId },
     ...dbOptions,
   });
 
@@ -211,9 +192,7 @@ export const getTransactions = async (dbOptions = {}) => {
 };
 
 export const getTransactionCount = async (dbOptions = {}) => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User is not logged in!');
+  await requireUserId();
 
   const count = await db.transaction.count(dbOptions);
 
@@ -223,44 +202,36 @@ export const getTransactionCount = async (dbOptions = {}) => {
 /* Create new Budget */
 
 export const createBudget = async (formData: FormData) => {
-  const name = formData.get('name') as string;
-  const max = Number.parseFloat(formData.get('max') as string);
-  const categoryIds = JSON.parse(formData.get('categoryIds') as string);
+  const result = await runMutation('createBudget', async (userId) => {
+    const name = formData.get('name') as string;
+    const max = Number.parseFloat(formData.get('max') as string);
+    const categories = parseBudgetCategoryIds(formData.get('categoryIds'))
+      .map((id) => categoryConnection(id, userId));
 
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User not logged in');
-
-  const categories = await db.transactionCategory.findMany({
-    where: { id: { in: categoryIds } },
-  });
-
-  await db.budget.create({
-    data: {
-      name: name,
-      max: Prisma.Decimal(max),
-      user: {
-        connect: {
-          id: session.user.id,
+    await db.budget.create({
+      data: {
+        name: name,
+        max: Prisma.Decimal(max),
+        user: {
+          connect: {
+            id: userId,
+          },
+        },
+        categories: {
+          connect: categories,
         },
       },
-      categories: {
-        connect: categories,
-      },
-    },
+    });
   });
-  revalidatePath('/budgets');
-  return { success: true };
+  return revalidateMutation(result, '/budgets');
 };
 
 export const getBudgets = async (dbOptions = {}) => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User not logged in');
+  const userId = await requireUserId();
 
   const budgets = await db.budget.findMany({
     where: {
-      userId: session.user.id,
+      userId,
     },
     ...dbOptions,
   });
@@ -269,58 +240,43 @@ export const getBudgets = async (dbOptions = {}) => {
 };
 
 export const deleteBudget = async (budgetId: number) => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User not logged in');
-
-  await db.budget.delete({
-    where: {
-      id: budgetId,
-    },
+  const result = await runMutation('deleteBudget', async (userId) => {
+    await db.budget.delete({
+      where: {
+        id: RecordIdSchema.parse(budgetId),
+        userId,
+      },
+    });
   });
-
-  revalidatePath('/budgets');
-  return { success: true };
+  return revalidateMutation(result, '/budgets');
 };
 
 export const updateBudget = async (formData: FormData, budgetId: number) => {
-  const session = await auth();
+  const result = await runMutation('updateBudget', async (userId) => {
+    const name = formData.get('name') as string;
+    const max = Number.parseFloat(formData.get('max') as string);
+    const categories = parseBudgetCategoryIds(formData.get('categoryIds'))
+      .map((id) => categoryConnection(id, userId));
 
-  if (!session?.user) throw new Error('User not logged in');
-
-  const name = formData.get('name') as string;
-  const max = Number.parseFloat(formData.get('max') as string);
-  const categoryIds = JSON.parse(formData.get('categoryIds') as string);
-
-  const categories = await db.transactionCategory.findMany({
-    where: { id: { in: categoryIds } },
-  });
-
-  await db.budget.update({
-    where: {
-      id: budgetId,
-    },
-    data: {
-      name: name,
-      max: Prisma.Decimal(max),
-      user: {
-        connect: {
-          id: session.user.id,
+    await db.budget.update({
+      where: {
+        id: RecordIdSchema.parse(budgetId),
+        userId,
+      },
+      data: {
+        name: name,
+        max: Prisma.Decimal(max),
+        categories: {
+          connect: categories,
         },
       },
-      categories: {
-        connect: categories,
-      },
-    },
+    });
   });
-  revalidatePath('/budgets');
-  return { success: true };
+  return revalidateMutation(result, '/budgets');
 };
 
 export const getBudgetCount = async (dbOptions = {}) => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User not logged in');
+  await requireUserId();
 
   const count = await db.budget.count(dbOptions);
 
@@ -334,16 +290,14 @@ export const getExpenseVsIncome = async (
   startDate?: string,
   endDate?: string
 ) => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User not logged in');
+  const userId = await requireUserId();
 
   const queryResult = await db.$queryRawTyped(
     incomeExpense(
       step,
       startDate ?? '1000-01-01',
       endDate ?? new Date().toISOString(),
-      session.user.id as string
+      userId
     )
   );
 
@@ -357,9 +311,7 @@ export const getExpenseVsIncome = async (
 };
 
 export const getIncome = async (startDate: Date, endDate: Date) => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User not logged in');
+  const userId = await requireUserId();
 
   const income =
     startDate && endDate
@@ -369,7 +321,7 @@ export const getIncome = async (startDate: Date, endDate: Date) => {
           },
           where: {
             type: TransactionType.INCOME,
-            userId: session.user.id,
+            userId,
             timestamp: {
               lte: endDate,
               gte: startDate,
@@ -380,15 +332,13 @@ export const getIncome = async (startDate: Date, endDate: Date) => {
           _sum: {
             amount: true,
           },
-          where: { type: TransactionType.INCOME, userId: session.user.id },
+          where: { type: TransactionType.INCOME, userId },
         });
   return income;
 };
 
 export const getExpense = async (startDate: Date, endDate: Date) => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User not logged in');
+  const userId = await requireUserId();
 
   const expense =
     startDate && endDate
@@ -398,7 +348,7 @@ export const getExpense = async (startDate: Date, endDate: Date) => {
           },
           where: {
             type: TransactionType.EXPENSE,
-            userId: session.user.id,
+            userId,
             timestamp: {
               lte: endDate,
               gte: startDate,
@@ -409,12 +359,13 @@ export const getExpense = async (startDate: Date, endDate: Date) => {
           _sum: {
             amount: true,
           },
-          where: { type: TransactionType.EXPENSE, userId: session.user.id },
+          where: { type: TransactionType.EXPENSE, userId },
         });
   return expense;
 };
 
 export const getBudgetWithAmount = async (expensesByCategory: any) => {
+  await requireUserId();
   const budgets = (
     (await getBudgets({
       include: { categories: { select: { name: true, id: true } } },
@@ -453,9 +404,7 @@ export const getExpensesByCategory = async (
   startDate: string,
   endDate: string
 ) => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User not logged in');
+  const userId = await requireUserId();
 
   const expensesByCategory =
     startDate && endDate
@@ -470,7 +419,7 @@ export const getExpensesByCategory = async (
               gte: new Date(startDate),
             },
             type: TransactionType.EXPENSE,
-            userId: session.user.id,
+            userId,
             category: {
               id: {
                 not: undefined,
@@ -485,7 +434,7 @@ export const getExpensesByCategory = async (
           },
           where: {
             type: TransactionType.EXPENSE,
-            userId: session.user.id,
+            userId,
             category: {
               id: {
                 not: undefined,

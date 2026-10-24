@@ -1,5 +1,7 @@
 'use client';
 
+import { toast } from 'sonner';
+
 import { useState, useEffect } from 'react';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import { PreviewConfig } from 'emoji-picker-react/dist/config/config';
@@ -67,7 +69,11 @@ export default function EditCategoryForm({
       );
 
       // if response is good run onSuccess function
-      if (res.success && onSuccess) onSuccess();
+      if (res.success) {
+        onSuccess?.();
+      } else {
+        toast.error(res.error.message);
+      }
     } catch (err) {
       console.log(err);
     }

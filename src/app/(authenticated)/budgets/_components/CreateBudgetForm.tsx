@@ -1,5 +1,7 @@
 'use client';
 
+import { toast } from 'sonner';
+
 import { useState } from 'react';
 import { createBudget } from '@/lib/actions';
 import { BudgetSchema } from '@/lib/validation';
@@ -51,7 +53,11 @@ export default function CreateBudgetForm({
       formData.append('categoryIds', JSON.stringify(values.categoryIds));
       const res = await createBudget(formData);
       // if response is good run onSuccess function
-      if (res.success && onSuccess) onSuccess();
+      if (res.success) {
+        onSuccess?.();
+      } else {
+        toast.error(res.error.message);
+      }
     } catch (err) {
       console.log(err);
     } finally {
