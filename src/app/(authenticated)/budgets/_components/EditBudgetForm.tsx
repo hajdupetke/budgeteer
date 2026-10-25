@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { updateBudget } from '@/lib/actions';
 import { BudgetSchema } from '@/lib/validation';
 import { z } from 'zod';
@@ -27,11 +27,11 @@ export default function EditBudgetForm({
   budget,
 }: {
   onSuccess?: () => void;
-  categories: { label: string; value: string }[];
+  categories: { label: string; value: number }[];
   budget: BudgetFormData;
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selected, setSelected] = useState<any[]>(budget.categoryIds);
+  const [selected, setSelected] = useState<number[]>(budget.categoryIds);
 
   // Make form using useForm hook
   const form = useForm<BudgetFormData>({
@@ -44,8 +44,15 @@ export default function EditBudgetForm({
     },
   });
 
+  useEffect(() => {
+    form.reset(budget);
+    setSelected(budget.categoryIds);
+  }, [budget, form]);
+
   // Call server action when submitting form
   const onFormSubmit = async (values: BudgetFormData) => {
+    setIsSubmitting(true);
+    form.clearErrors();
     try {
       const formData = new FormData();
       formData.append('name', values.name);
@@ -53,9 +60,10 @@ export default function EditBudgetForm({
       formData.append('categoryIds', JSON.stringify(values.categoryIds));
       const res = await updateBudget(formData, budget.id as number);
       // if response is good run onSuccess function
-      if (res.success && onSuccess) onSuccess();
-    } catch (err) {
-      console.log(err);
+      if (res.success) onSuccess?.();
+      else form.setError('root', { message: res.message });
+    } catch {
+      form.setError('root', { message: 'Could not save your changes. Try again.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -125,6 +133,7 @@ export default function EditBudgetForm({
           }}
         />
 
+        {form.formState.errors.root && <p role="alert">{form.formState.errors.root.message}</p>}
         <Button
           type="submit"
           disabled={isSubmitting}

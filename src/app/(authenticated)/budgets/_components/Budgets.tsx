@@ -1,6 +1,5 @@
-'use server';
+import { clampPage } from '@/lib/finance';
 
-import { BudgetWithCategory, PrismaBudgetWithCategory } from '@/types/budget';
 import BudgetList from './BudgetList';
 import NewBudget from './NewBudget';
 import { getCategories, getBudgets, getBudgetCount } from '@/lib/actions';
@@ -13,35 +12,24 @@ const Budgets = async ({ page }: { page: number }) => {
   const session = await auth();
   if (!session?.user) return redirect('/sign-in');
 
-  const categories = (
-    await getCategories({
-      select: {
-        id: true,
-        name: true,
-      },
-    })
-  ).map((category) => ({
+  const categories = (await getCategories()).map((category) => ({
     value: category.id,
     label: category.name,
   }));
 
-  const fetchedBudgets = (await getBudgets({
-    include: { categories: { select: { name: true, id: true } } },
+  const budgetCount = await getBudgetCount();
+  page = clampPage(page, budgetCount, BUDGETS_PER_PAGE);
+
+  const fetchedBudgets = await getBudgets({
     skip: (page - 1) * BUDGETS_PER_PAGE,
     take: BUDGETS_PER_PAGE,
-  })) as PrismaBudgetWithCategory[];
+  });
 
   const budgets = fetchedBudgets.map((budget) => ({
     ...budget,
-    max: budget.max.toNumber(),
+    max: budget.max.toString(),
     categoryIds: budget.categories.map((category) => category.id),
-  })) as BudgetWithCategory[];
-
-  const budgetCount = await getBudgetCount({
-    where: { userId: session.user.id },
-  });
-
-  console.log(budgetCount);
+  }));
 
   return (
     <div className="w-full">
@@ -49,6 +37,7 @@ const Budgets = async ({ page }: { page: number }) => {
         <h2 className="font-bold text-3xl">Budgets</h2>
         <NewBudget categories={categories} />
       </div>
+      <p>Monthly budgets use the current UTC calendar month. Budgets sharing categories each count the same spending.</p>
       <div className="flex flex-wrap lg:flex-nowrap gap-2 lg:gap-4 items-center justify-center flex-row mt-4">
         <BudgetList
           budgets={budgets}

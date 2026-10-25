@@ -24,6 +24,7 @@ const NewTransaction = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
+          aria-label="Add transaction"
           onClick={() => setOpen(true)}
           className={`${buttonVariants({
             variant: 'default',

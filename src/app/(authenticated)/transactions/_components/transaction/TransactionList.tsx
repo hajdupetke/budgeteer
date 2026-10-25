@@ -1,4 +1,5 @@
 'use client';
+import { formatMoney } from '@/lib/finance';
 
 import { TransactionWithCategory } from '@/types/transaction';
 import { useState } from 'react';
@@ -17,9 +18,7 @@ const TransactionList = ({
 }) => {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [selected, setSelected] = useState<TransactionWithCategory>(
-    transactions[0]
-  );
+  const [selected, setSelected] = useState<TransactionWithCategory | null>(null);
 
   return (
     <>
@@ -42,19 +41,20 @@ const TransactionList = ({
             ) : (
               <TrendingDown className="text-warning-600" />
             )}
-            {transaction?.category ? transaction.category.icon : '❗️'}
+            <span title={transaction.category?.name ?? 'Uncategorized'}>{transaction.category?.icon ?? <span className="text-sm">Uncategorized</span>}</span>
             <span className="text-lg font-semibold flex items-center gap-2">
               {transaction.name}{' '}
             </span>
           </p>
-          <p className="text-center">{transaction.amount} EUR</p>
-          <p className="text-center">
+          <p className="text-center">{formatMoney(transaction.amount)}</p>
+          <p className="text-center" title="UTC">
             {transaction.timestamp.toLocaleString('en-us', {
               year: 'numeric',
               month: '2-digit',
               day: '2-digit',
 
               hour12: false,
+              timeZone: 'UTC',
             })}
           </p>
           <div className="flex items-center justify-center gap-4">
@@ -81,17 +81,17 @@ const TransactionList = ({
         </div>
       ))}
 
-      <EditTransaction
+      {selected && editOpen && (<EditTransaction
         transaction={selected}
         open={editOpen}
         setOpen={(bool) => setEditOpen(bool)}
         categories={categories}
-      />
-      <DeleteTransaction
+      />)}
+      {selected && deleteOpen && (<DeleteTransaction
         transaction={selected}
         open={deleteOpen}
         setOpen={(bool) => setDeleteOpen(bool)}
-      />
+      />)}
     </>
   );
 };

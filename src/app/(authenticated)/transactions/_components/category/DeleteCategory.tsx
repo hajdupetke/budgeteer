@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { TransactionCategory } from '@prisma/client';
 import { Button } from '@/components/ui/button';
 import { deleteTransactionCategory } from '@/lib/actions';
@@ -18,6 +19,7 @@ const DeleteCategory = ({
   open: boolean;
   setOpen: (bool: boolean) => void;
 }) => {
+  const [pending, setPending] = useState(false);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
@@ -29,8 +31,7 @@ const DeleteCategory = ({
         </p>
         <p className="text-red-800">
           {' '}
-          This action cannot be undone, all transactions with this category,
-          will now have no category.
+          This action cannot be undone. Existing transactions will become Uncategorized. The category will also be removed from budgets.
         </p>
         <div className="flex gap-1 mt-4 justify-end">
           <Button
@@ -41,16 +42,24 @@ const DeleteCategory = ({
           </Button>
           <Button
             variant="destructive"
+            disabled={pending}
             onClick={async () => {
-              const res = await deleteTransactionCategory(category.id);
-              if (res.success) {
-                setOpen(false);
-                toast.success('Category successfully deleted!');
+              setPending(true);
+              try {
+                const res = await deleteTransactionCategory(category.id);
+                if (res.success) {
+                  setOpen(false);
+                  toast.success('Category successfully deleted!');
+                } else toast.error(res.message);
+              } catch {
+                toast.error('Could not delete this record. Try again.');
+              } finally {
+                setPending(false);
               }
             }}
             className="bg-warning-600! font-bold hover:bg-warning-800! cursor-pointer"
           >
-            Delete
+            {pending ? 'Deleting...' : 'Delete'}
           </Button>
         </div>
       </DialogContent>

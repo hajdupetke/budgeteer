@@ -1,4 +1,5 @@
 'use client';
+import { formatMoney } from '@/lib/finance';
 
 import * as React from 'react';
 import { Pie, PieChart } from 'recharts';
@@ -25,7 +26,7 @@ export function ExpensesByCategory({
 
   chartConfig = {
     category: {
-      label: 'lajos',
+      label: 'Category',
     },
     ...chartConfig,
   };
@@ -36,18 +37,18 @@ export function ExpensesByCategory({
         <CardTitle>Expenses by category</CardTitle>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
-        <ChartContainer
+        {chartData.length === 0 ? <p>No data for this period.</p> : <ChartContainer
           config={chartConfig}
           className="mx-auto aspect-square max-h-[275px]"
         >
           <PieChart>
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent hideLabel />}
+              content={<ChartTooltipContent formatter={(value, name) => <><span>{chartConfig[String(name)]?.label ?? name}</span><span>{formatMoney(String(value))}</span></>} hideLabel />}
             />
             <Pie data={chartData} dataKey="sum" nameKey="category" stroke="0" />
           </PieChart>
-        </ChartContainer>
+        </ChartContainer>}
       </CardContent>
     </Card>
   );

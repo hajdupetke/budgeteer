@@ -1,4 +1,4 @@
-'use server';
+import { clampPage } from '@/lib/finance';
 
 import { getCategories, getCategoryCount } from '@/lib/actions';
 import CategoryList from './CategoryList';
@@ -20,20 +20,15 @@ const Categories = async ({ page }: { page: number }) => {
   if (!session?.user) return redirect('/sign-in');
 
   const categoryCount = await getCategoryCount({
-    where: { userId: session.user.id },
+    ownedOnly: true,
   });
 
-  console.log('categori page', page);
+  page = clampPage(page, categoryCount, CATEGORIES_PER_PAGE);
 
   const categories = await getCategories({
-    where: {
-      userId: session?.user.id,
-    },
+    ownedOnly: true,
     skip: (page - 1) * CATEGORIES_PER_PAGE,
     take: CATEGORIES_PER_PAGE,
-    orderBy: {
-      createdAt: 'desc',
-    },
   });
 
   return (

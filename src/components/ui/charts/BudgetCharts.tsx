@@ -1,4 +1,5 @@
 'use client';
+import { formatMoney } from '@/lib/finance';
 
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 
@@ -12,7 +13,7 @@ import {
 
 const chartConfig = {
   amount: {
-    label: 'Current',
+    label: 'Spent',
   },
   remaining: {
     label: 'Remaining',
@@ -37,7 +38,7 @@ export function BudgetCharts({
         <CardTitle>Budgets</CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig}>
+        {chartData.length === 0 ? <p>No data for this period.</p> : <ChartContainer config={chartConfig}>
           <BarChart
             barCategoryGap={8}
             data={remainingChartData}
@@ -46,10 +47,10 @@ export function BudgetCharts({
             margin={{ top: 10, right: 10, left: 0, bottom: 20 }}
           >
             <CartesianGrid horizontal strokeDasharray="3 3" />
-            <XAxis type="number" />
+            <XAxis type="number" tickFormatter={formatMoney} />
             <YAxis dataKey="name" type="category" width={90} />
             <ChartTooltip
-              content={<ChartTooltipContent hideLabel className="w-40" />}
+              content={<ChartTooltipContent formatter={(value, name) => <><span>{name === 'amount' ? 'Spent' : 'Remaining'}</span><span>{formatMoney(String(value))}</span></>} hideLabel className="w-40" />}
             />
 
             <Bar
@@ -65,7 +66,7 @@ export function BudgetCharts({
               radius={0}
             />
           </BarChart>
-        </ChartContainer>
+        </ChartContainer>}
       </CardContent>
     </Card>
   );

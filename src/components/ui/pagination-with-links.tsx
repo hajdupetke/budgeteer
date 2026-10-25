@@ -59,7 +59,7 @@ export function PaginationWithLinks({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const totalPageCount = Math.ceil(totalCount / pageSize);
+  const totalPageCount = Math.max(1, Math.ceil(totalCount / pageSize));
 
   const buildLink = useCallback(
     (newPage: number) => {
@@ -69,7 +69,7 @@ export function PaginationWithLinks({
       newSearchParams.set(key, String(newPage));
       return `${pathname}?${newSearchParams.toString()}`;
     },
-    [searchParams, pathname]
+    [searchParams, pathname, pageSearchParam]
   );
 
   const navToPageSize = useCallback(
@@ -80,7 +80,7 @@ export function PaginationWithLinks({
       newSearchParams.delete(pageSearchParam || 'page'); // Clear the page number when changing page size
       router.push(`${pathname}?${newSearchParams.toString()}`);
     },
-    [searchParams, pathname]
+    [searchParams, pathname, pageSearchParam, pageSizeSelectOptions, router]
   );
 
   const renderPageNumbers = () => {
@@ -163,6 +163,8 @@ export function PaginationWithLinks({
 
     return items;
   };
+
+  if (totalCount === 0) return null;
 
   return (
     <div className="flex flex-col md:flex-row items-center gap-3 w-full">

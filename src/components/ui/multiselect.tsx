@@ -15,14 +15,14 @@ import {
 import { X } from 'lucide-react';
 
 export type MultiSelectOption = {
-  value: any;
+  value: number;
   label: string;
 };
 
 interface MultiSelectProps {
   options: MultiSelectOption[];
-  selected: any[];
-  onChange: (selection: any[]) => void;
+  selected: number[];
+  onChange: (selection: number[]) => void;
   placeholder?: string;
   emptyMessage?: string;
   isInvalid?: boolean;
@@ -38,7 +38,7 @@ export const MultiSelect = ({
 }: MultiSelectProps) => {
   const [open, setOpen] = useState(false);
 
-  const handleSelect = (value: string) => {
+  const handleSelect = (value: number) => {
     if (selected.includes(value)) {
       onChange(selected.filter((item) => item !== value));
     } else {
@@ -83,7 +83,7 @@ export const MultiSelect = ({
                   <div
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleSelect(selectedOption?.value as string);
+                      handleSelect(item);
                     }}
                     className="cursor-pointer"
                   >

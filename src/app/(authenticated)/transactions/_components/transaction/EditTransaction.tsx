@@ -23,7 +23,7 @@ const EditTransaction = ({
         </DialogTitle>
         <EditTransactionForm
           categories={categories}
-          transaction={transaction}
+          transaction={{ ...transaction, amount: transaction.amount.toString() }}
           onSuccess={() => {
             setOpen(false);
             toast.success('Transaction successfully edited!');

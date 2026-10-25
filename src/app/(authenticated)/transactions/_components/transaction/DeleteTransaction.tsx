@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { deleteTransaction } from '@/lib/actions';
 import { TransactionWithCategory } from '@/types/transaction';
@@ -18,6 +19,7 @@ const DeleteTransaction = ({
   open: boolean;
   setOpen: (bool: boolean) => void;
 }) => {
+  const [pending, setPending] = useState(false);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
@@ -37,16 +39,24 @@ const DeleteTransaction = ({
           </Button>
           <Button
             variant="destructive"
+            disabled={pending}
             onClick={async () => {
-              const res = await deleteTransaction(transaction.id);
-              if (res.success) {
-                setOpen(false);
-                toast.success('Transaction successfully deleted!');
+              setPending(true);
+              try {
+                const res = await deleteTransaction(transaction.id);
+                if (res.success) {
+                  setOpen(false);
+                  toast.success('Transaction successfully deleted!');
+                } else toast.error(res.message);
+              } catch {
+                toast.error('Could not delete this record. Try again.');
+              } finally {
+                setPending(false);
               }
             }}
             className="bg-warning-600! font-bold hover:bg-warning-800! cursor-pointer"
           >
-            Delete
+            {pending ? 'Deleting...' : 'Delete'}
           </Button>
         </div>
       </DialogContent>

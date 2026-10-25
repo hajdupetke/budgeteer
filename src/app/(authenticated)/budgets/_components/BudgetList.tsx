@@ -1,4 +1,5 @@
 'use client';
+import { formatMoney } from '@/lib/finance';
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -24,7 +25,7 @@ const BudgetList = ({
 }) => {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [selected, setSelected] = useState<BudgetWithCategory>(budgets[0]);
+  const [selected, setSelected] = useState<BudgetWithCategory | null>(null);
 
   if (budgetCount > 0) {
     return (
@@ -53,7 +54,7 @@ const BudgetList = ({
                     {budget.name}{' '}
                   </span>
                 </p>
-                <p className="text-center">{budget.max} EUR</p>
+                <p className="text-center">{formatMoney(budget.max)}</p>
                 <p className="text-center">
                   {budget.categories.slice(0, 3).map((category) => (
                     <span key={category.name}>{category.name} </span>
@@ -93,17 +94,17 @@ const BudgetList = ({
             />
           </CardFooter>
         </Card>
-        <DeleteBudget
+        {selected && deleteOpen && (<DeleteBudget
           open={deleteOpen}
           setOpen={setDeleteOpen}
           budget={selected}
-        />
-        <EditBudget
+        />)}
+        {selected && editOpen && (<EditBudget
           open={editOpen}
           setOpen={setEditOpen}
           budget={selected}
           categories={categories}
-        />
+        />)}
       </>
     );
   } else {

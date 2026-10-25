@@ -12,7 +12,7 @@ const CategoryList = ({
   categories: TransactionCategory[];
 }) => {
   const [editOpen, setEditOpen] = useState(false);
-  const [selected, setSelected] = useState<TransactionCategory>(categories[0]);
+  const [selected, setSelected] = useState<TransactionCategory | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   return (
@@ -54,16 +54,16 @@ const CategoryList = ({
         </div>
       ))}
 
-      <EditCategory
+      {selected && editOpen && (<EditCategory
         category={selected}
         open={editOpen}
         setOpen={(bool) => setEditOpen(bool)}
-      />
-      <DeleteCategory
+      />)}
+      {selected && deleteOpen && (<DeleteCategory
         category={selected}
         open={deleteOpen}
         setOpen={(bool) => setDeleteOpen(bool)}
-      />
+      />)}
     </>
   );
 };

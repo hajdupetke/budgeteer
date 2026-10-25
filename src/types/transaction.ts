@@ -5,6 +5,7 @@ type PrismaTransactionWithCategory = Prisma.TransactionGetPayload<{
     category: {
       select: {
         icon: true;
+        name: true;
       };
     };
   };
@@ -14,7 +15,7 @@ export type TransactionWithCategory = Omit<
   PrismaTransactionWithCategory,
   'amount'
 > & {
-  amount: number;
+  amount: string;
 };
 
 type PrimsaReportTransactions = Prisma.TransactionGetPayload<{

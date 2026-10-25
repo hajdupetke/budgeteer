@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { deleteBudget } from '@/lib/actions';
 import { BudgetWithCategory } from '@/types/budget';
@@ -18,6 +19,7 @@ const DeleteBudget = ({
   open: boolean;
   setOpen: (bool: boolean) => void;
 }) => {
+  const [pending, setPending] = useState(false);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
@@ -37,16 +39,24 @@ const DeleteBudget = ({
           </Button>
           <Button
             variant="destructive"
+            disabled={pending}
             onClick={async () => {
-              const res = await deleteBudget(budget.id);
-              if (res.success) {
-                setOpen(false);
-                toast.success('Budget successfully deleted!');
+              setPending(true);
+              try {
+                const res = await deleteBudget(budget.id);
+                if (res.success) {
+                  setOpen(false);
+                  toast.success('Budget successfully deleted!');
+                } else toast.error(res.message);
+              } catch {
+                toast.error('Could not delete this record. Try again.');
+              } finally {
+                setPending(false);
               }
             }}
             className="bg-warning-600! font-bold hover:bg-warning-800! cursor-pointer"
           >
-            Delete
+            {pending ? 'Deleting...' : 'Delete'}
           </Button>
         </div>
       </DialogContent>

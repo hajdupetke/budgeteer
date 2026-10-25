@@ -26,10 +26,10 @@ export default function CreateBudgetForm({
   categories,
 }: {
   onSuccess?: () => void;
-  categories: { label: string; value: string }[];
+  categories: { label: string; value: number }[];
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selected, setSelected] = useState<any[]>([]);
+  const [selected, setSelected] = useState<number[]>([]);
 
   // Make form using useForm hook
   const form = useForm<BudgetFormData>({
@@ -37,13 +37,15 @@ export default function CreateBudgetForm({
     defaultValues: {
       id: 0,
       name: '',
-      max: 0,
+      max: '',
       categoryIds: [],
     },
   });
 
   // Call server action when submitting form
   const onFormSubmit = async (values: BudgetFormData) => {
+    setIsSubmitting(true);
+    form.clearErrors();
     try {
       const formData = new FormData();
       formData.append('name', values.name);
@@ -51,9 +53,10 @@ export default function CreateBudgetForm({
       formData.append('categoryIds', JSON.stringify(values.categoryIds));
       const res = await createBudget(formData);
       // if response is good run onSuccess function
-      if (res.success && onSuccess) onSuccess();
-    } catch (err) {
-      console.log(err);
+      if (res.success) onSuccess?.();
+      else form.setError('root', { message: res.message });
+    } catch {
+      form.setError('root', { message: 'Could not save your changes. Try again.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -123,6 +126,7 @@ export default function CreateBudgetForm({
           }}
         />
 
+        {form.formState.errors.root && <p role="alert">{form.formState.errors.root.message}</p>}
         <Button
           type="submit"
           disabled={isSubmitting}

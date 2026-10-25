@@ -1,6 +1,5 @@
-'use server';
+import { clampPage } from '@/lib/finance';
 import TransactionList from './TransactionList';
-import { TransactionWithCategory } from '@/types/transaction';
 import NewTransaction from './NewTransaction';
 import {
   getTransactionCount,
@@ -24,31 +23,20 @@ const Transactions = async ({ page }: { page: number }) => {
 
   if (!session?.user) redirect('/sign-in');
 
-  const transactionCount = await getTransactionCount({
-    where: { userId: session.user.id },
-  });
+  const transactionCount = await getTransactionCount();
 
+  page = clampPage(page, transactionCount, TRANSACTION_ITEMS_PER_PAGE);
   const categories = await getCategories();
 
   const transactions = (
     await getTransactions({
-      include: {
-        category: {
-          select: {
-            icon: true,
-          },
-        },
-      },
       skip: (page - 1) * TRANSACTION_ITEMS_PER_PAGE,
       take: TRANSACTION_ITEMS_PER_PAGE,
-      orderBy: {
-        timestamp: 'desc',
-      },
     })
   ).map((transaction) => ({
     ...transaction,
-    amount: transaction.amount.toNumber(),
-  })) as TransactionWithCategory[];
+    amount: transaction.amount.toString(),
+  }));
 
   return (
     <Card className="size-full py-4 gap-4">

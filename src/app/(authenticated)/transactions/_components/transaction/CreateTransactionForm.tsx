@@ -22,6 +22,7 @@ import {
   SelectContent,
   SelectValue,
   SelectItem,
+  SelectGroup,
   SelectTrigger,
 } from '@/components/ui/select';
 import { DateTimePicker } from '@/components/ui/datetime/datetime-picker';
@@ -45,8 +46,8 @@ export default function CreateTransactionForm({
     defaultValues: {
       id: 0,
       name: '',
-      amount: 0,
-      categoryId: 0,
+      amount: '',
+      categoryId: null,
       timestamp: date,
       type: 'INCOME',
     },
@@ -54,19 +55,22 @@ export default function CreateTransactionForm({
 
   // Call server action when submitting form
   const onFormSubmit = async (values: TransactionFormData) => {
+    setIsSubmitting(true);
+    form.clearErrors();
     try {
       const formData = new FormData();
       formData.append('name', values.name);
       formData.append('amount', values.amount.toString());
-      formData.append('categoryId', (values.categoryId as number).toString());
+      formData.append('categoryId', values.categoryId?.toString() ?? '');
       formData.append('transactionType', values.type);
       if (values.timestamp)
-        formData.append('timestamp', new Date(values.timestamp).toString());
+        formData.append('timestamp', values.timestamp.toISOString());
       const res = await createTransaction(formData);
       // if response is good run onSuccess function
-      if (res.success && onSuccess) onSuccess();
-    } catch (err) {
-      console.log(err);
+      if (res.success) onSuccess?.();
+      else form.setError('root', { message: res.message });
+    } catch {
+      form.setError('root', { message: 'Could not save your changes. Try again.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -109,8 +113,10 @@ export default function CreateTransactionForm({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="INCOME">Income</SelectItem>
-                  <SelectItem value="EXPENSE">Expense</SelectItem>
+                  <SelectGroup>
+                    <SelectItem value="INCOME">Income</SelectItem>
+                    <SelectItem value="EXPENSE">Expense</SelectItem>
+                  </SelectGroup>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -145,9 +151,8 @@ export default function CreateTransactionForm({
                 Category
               </FormLabel>
               <Select
-                onValueChange={(value) => field.onChange(parseInt(value, 10))}
-                defaultValue={field.value ? field.value.toString() : undefined}
-                value={field.value ? field.value.toString() : undefined}
+                onValueChange={(value) => field.onChange(value === 'uncategorized' ? null : Number(value))}
+                value={field.value?.toString() ?? 'uncategorized'}
               >
                 <FormControl>
                   <SelectTrigger className="w-full placeholder:text-slate-400 bg-white !h-12 text-sm">
@@ -155,16 +160,19 @@ export default function CreateTransactionForm({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {categories.map((category) => {
-                    return (
-                      <SelectItem
-                        value={category.id.toString()}
-                        key={category.id}
-                      >
-                        {category.name}
-                      </SelectItem>
-                    );
-                  })}
+                  <SelectGroup>
+                    <SelectItem value="uncategorized">Uncategorized</SelectItem>
+                    {categories.map((category) => {
+                      return (
+                        <SelectItem
+                          value={category.id.toString()}
+                          key={category.id}
+                        >
+                          {category.name}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectGroup>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -196,6 +204,7 @@ export default function CreateTransactionForm({
           )}
         />
 
+        {form.formState.errors.root && <p role="alert">{form.formState.errors.root.message}</p>}
         <Button
           type="submit"
           disabled={isSubmitting}

@@ -1,4 +1,5 @@
 'use client';
+import { formatMoney } from '@/lib/finance';
 
 import { CartesianGrid, Line, LineChart, XAxis } from 'recharts';
 
@@ -34,7 +35,7 @@ export function IncomeExpenseChart({
         <CardTitle>Income vs. Expenses period</CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig}>
+        {chartData.length === 0 ? <p>No data for this period.</p> : <ChartContainer config={chartConfig}>
           <LineChart
             accessibilityLayer
             data={chartData}
@@ -44,8 +45,8 @@ export function IncomeExpenseChart({
             }}
           >
             <CartesianGrid vertical={false} />
-            <XAxis dataKey="period" tickLine={false} axisLine={false} />
-            <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+            <XAxis dataKey="period" tickLine={false} axisLine={false} tickFormatter={(value) => new Date(value).toLocaleDateString('en-GB', { timeZone: 'UTC' })} />
+            <ChartTooltip cursor={false} content={<ChartTooltipContent labelFormatter={(label) => new Date(String(label)).toLocaleDateString('en-GB', { timeZone: 'UTC' })} formatter={(value, name) => <><span>{name === 'totalIncome' ? 'Income' : 'Expenses'}</span><span>{formatMoney(String(value))}</span></>} />} />
             <Line
               dataKey="totalIncome"
               type="monotone"
@@ -61,7 +62,7 @@ export function IncomeExpenseChart({
               dot={false}
             />
           </LineChart>
-        </ChartContainer>
+        </ChartContainer>}
       </CardContent>
     </Card>
   );

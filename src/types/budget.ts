@@ -5,6 +5,6 @@ export type PrismaBudgetWithCategory = Prisma.BudgetGetPayload<{
 }>;
 
 export type BudgetWithCategory = Omit<PrismaBudgetWithCategory, 'max'> & {
-  max: number;
+  max: string;
   categoryIds: number[];
 };

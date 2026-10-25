@@ -49,6 +49,7 @@ export default function CreateCategoryForm({
   // Call server action when submitting form
   const onFormSubmit = async (values: CategoryFormData) => {
     setIsSubmitting(true);
+    form.clearErrors();
     try {
       const formData = new FormData();
       formData.append('icon', values.icon);
@@ -56,9 +57,10 @@ export default function CreateCategoryForm({
       const res = await createTransactionCategory(formData);
 
       // if response is good run onSuccess function
-      if (res.success && onSuccess) onSuccess();
-    } catch (err) {
-      console.log(err);
+      if (res.success) onSuccess?.();
+      else form.setError('root', { message: res.message });
+    } catch {
+      form.setError('root', { message: 'Could not save your changes. Try again.' });
     }
     setIsSubmitting(false);
   };
@@ -131,6 +133,7 @@ export default function CreateCategoryForm({
           )}
         />
 
+        {form.formState.errors.root && <p role="alert">{form.formState.errors.root.message}</p>}
         <Button
           type="submit"
           disabled={isSubmitting}

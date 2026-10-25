@@ -1,498 +1,250 @@
 'use server';
+
 import { redirect } from 'next/navigation';
-import { signOut } from './auth';
-import { db } from './db';
 import { revalidatePath } from 'next/cache';
-import { auth } from './auth';
 import { Prisma } from '@prisma/client';
-import { TransactionType } from '@prisma/client';
 import { incomeExpense } from '@prisma/client/sql';
-import { PrismaBudgetWithCategory } from '@/types/budget';
+import { z } from 'zod';
+import { auth, signOut } from './auth';
+import { db } from './db';
+import {
+  InputError,
+  RecordIdSchema,
+  TransactionCategorySchema,
+  transactionInput,
+  budgetInput,
+} from './validation';
+import { dateBounds, type DateRange } from './finance';
+
+type MutationResult = { success: true } | { success: false; message: string };
+type Pagination = { skip?: number; take?: number };
+type CategoryOptions = Pagination & { ownedOnly?: boolean };
+
+async function userId() {
+  const session = await auth();
+  if (!session?.user?.id) throw new InputError('Please sign in to continue.');
+  return session.user.id;
+}
+
+function pagination(options: Pagination) {
+  return {
+    skip: z.number().int().nonnegative().safe().parse(options.skip ?? 0),
+    take: options.take === undefined
+      ? undefined
+      : z.number().int().min(1).max(100).parse(options.take),
+  };
+}
+
+function visibleCategories(id: string) {
+  return { OR: [{ userId: id }, { userId: null }] };
+}
+
+async function checkCategories(tx: Prisma.TransactionClient, id: string, ids: number[]) {
+  const uniqueIds = [...new Set(ids)];
+  const count = await tx.transactionCategory.count({
+    where: { ...visibleCategories(id), id: { in: uniqueIds } },
+  });
+  if (count !== uniqueIds.length) {
+    throw new InputError('A selected category is unavailable. Choose another category.');
+  }
+}
+
+async function mutate(write: (id: string) => Promise<unknown>): Promise<MutationResult> {
+  try {
+    await write(await userId());
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { success: false, message: error.issues[0].message };
+    }
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      return { success: false, message: 'This record is unavailable. Refresh and try again.' };
+    }
+    return {
+      success: false,
+      message: error instanceof InputError
+        ? error.message
+        : 'Could not save your changes. Try again.',
+    };
+  }
+  for (const path of ['/transactions', '/budgets', '/dashboard', '/reports']) {
+    revalidatePath(path);
+  }
+  return { success: true };
+}
 
 export const logOut = async () => {
   await signOut();
   redirect('/');
 };
 
-/* Create new TransactionCategory */
-
-export const createTransactionCategory = async (formData: FormData) => {
-  const icon = formData.get('icon') as string;
-  const name = formData.get('name') as string;
-  const session = await auth();
-
-  // return false if user not logged in
-  if (!session?.user) return { success: false };
-
-  await db.transactionCategory.create({
-    data: {
-      icon,
-      name,
-      user: {
-        connect: { id: session.user.id },
-      },
-    },
+export const createTransactionCategory = async (data: FormData) => mutate(async (id) => {
+  const values = TransactionCategorySchema.parse({
+    name: data.get('name'), icon: data.get('icon'),
   });
+  await db.transactionCategory.create({ data: { ...values, userId: id } });
+});
 
-  revalidatePath('/transactions');
-  return { success: true };
-};
-
-export const getCategoryCount = async (dbOptions = {}) => {
-  const session = await auth();
-
-  // return false if user not logged in
-  if (!session?.user) throw new Error('User not logged in!');
-
-  const count = await db.transactionCategory.count(dbOptions);
-  return count;
-};
-
-/* Update TransactionCategory by id */
-
-export const updateTransactionCategory = async (
-  formData: FormData,
-  categoryId: number
-) => {
-  const icon = formData.get('icon') as string;
-  const name = formData.get('name') as string;
-  const session = await auth();
-
-  // return false if user not logged in
-  if (!session?.user) return { success: false };
-
+export const updateTransactionCategory = async (data: FormData, categoryId: number) => mutate(async (id) => {
+  const values = TransactionCategorySchema.parse({
+    name: data.get('name'), icon: data.get('icon'),
+  });
   await db.transactionCategory.update({
-    where: {
-      id: categoryId,
-    },
-    data: {
-      icon,
-      name,
-    },
+    where: { id: RecordIdSchema.parse(categoryId), userId: id }, data: values,
   });
+});
 
-  revalidatePath('/transactions');
-  return { success: true };
-};
-
-/* Delete TransactionCategory by id */
-
-export const deleteTransactionCategory = async (categoryId: number) => {
-  const session = await auth();
-
-  // return false if user not logged in
-  if (!session?.user) return { success: false };
-
-  await db.transactionCategory.delete({ where: { id: categoryId } });
-
-  revalidatePath('/transactions');
-  return { success: true };
-};
-
-/* Get TransactionCategories for user */
-
-export const getCategories = async (dbOptions = {}) => {
-  const session = await auth();
-
-  // return false if user not logged in
-  if (!session?.user) throw new Error('User not logged in');
-
-  const categories = await db.transactionCategory.findMany({
-    where: { OR: [{ userId: session.user.id }, { userId: null }] },
-    ...dbOptions,
+export const deleteTransactionCategory = async (categoryId: number) => mutate(async (id) => {
+  await db.transactionCategory.delete({
+    where: { id: RecordIdSchema.parse(categoryId), userId: id },
   });
+});
 
-  return categories;
-};
-
-/* Create a new transaction */
-
-export const createTransaction = async (formData: FormData) => {
-  const name = formData.get('name') as string;
-  const amount = Number.parseFloat(formData.get('amount') as string);
-  const categoryId = Number.parseInt(formData.get('categoryId') as string);
-  const dateStr = formData.get('timestamp') as string;
-  const transactionType = formData.get('transactionType') as string;
-  const session = await auth();
-
-  if (!session?.user) return { success: false };
-
-  await db.transaction.create({
-    data: {
-      name,
-      amount: new Prisma.Decimal(amount),
-      timestamp: new Date(dateStr),
-      type: TransactionType[transactionType as keyof typeof TransactionType],
-      category: {
-        connect: {
-          id: categoryId,
-        },
-      },
-      user: {
-        connect: {
-          id: session.user.id,
-        },
-      },
-    },
+export const getCategories = async (options: CategoryOptions = {}) => {
+  const id = await userId();
+  return db.transactionCategory.findMany({
+    where: options.ownedOnly ? { userId: id } : visibleCategories(id),
+    ...pagination(options),
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
   });
-
-  revalidatePath('/transactions');
-  return { success: true };
 };
 
-/* Update existing transaction */
-
-export const updateTransaction = async (
-  formData: FormData,
-  transactionId: number
-) => {
-  const name = formData.get('name') as string;
-  const amount = Number.parseFloat(formData.get('amount') as string);
-  const categoryId = Number.parseInt(formData.get('categoryId') as string);
-  const dateStr = formData.get('timestamp') as string;
-  const transactionType = formData.get('transactionType') as string;
-  const session = await auth();
-
-  if (!session?.user) return { success: false };
-
-  await db.transaction.update({
-    where: {
-      id: transactionId,
-    },
-    data: {
-      name,
-      amount: new Prisma.Decimal(amount),
-      timestamp: new Date(dateStr),
-      type: TransactionType[transactionType as keyof typeof TransactionType],
-      category: {
-        connect: {
-          id: categoryId,
-        },
-      },
-      user: {
-        connect: {
-          id: session.user.id,
-        },
-      },
-    },
+export const getCategoryCount = async (options: { ownedOnly?: boolean } = {}) => {
+  const id = await userId();
+  return db.transactionCategory.count({
+    where: options.ownedOnly ? { userId: id } : visibleCategories(id),
   });
-
-  revalidatePath('/transactions');
-  return { success: true };
 };
 
-export const deleteTransaction = async (transactionId: number) => {
-  const session = await auth();
+export const createTransaction = async (data: FormData) => mutate(async (id) => {
+  const { categoryId, amount, ...values } = transactionInput(data);
+  await db.$transaction(async (tx) => {
+    await checkCategories(tx, id, categoryId === null ? [] : [categoryId]);
+    await tx.transaction.create({
+      data: { ...values, amount: new Prisma.Decimal(amount), categoryId, userId: id },
+    });
+  });
+});
 
-  // return false if user not logged in
-  if (!session?.user) return { success: false };
+export const updateTransaction = async (data: FormData, transactionId: number) => mutate(async (id) => {
+  const { categoryId, amount, ...values } = transactionInput(data);
+  await db.$transaction(async (tx) => {
+    await checkCategories(tx, id, categoryId === null ? [] : [categoryId]);
+    await tx.transaction.update({
+      where: { id: RecordIdSchema.parse(transactionId), userId: id },
+      data: { ...values, amount: new Prisma.Decimal(amount), categoryId },
+    });
+  });
+});
 
+export const deleteTransaction = async (transactionId: number) => mutate(async (id) => {
   await db.transaction.delete({
-    where: {
-      id: transactionId,
-    },
+    where: { id: RecordIdSchema.parse(transactionId), userId: id },
   });
+});
 
-  revalidatePath('/transactions');
-  return { success: true };
+export const getTransactions = async (options: Pagination & DateRange = {}) => {
+  const id = await userId();
+  return db.transaction.findMany({
+    where: { userId: id, timestamp: dateBounds(options) },
+    ...pagination(options),
+    include: { category: { select: { icon: true, name: true } } },
+    orderBy: [{ timestamp: 'desc' }, { id: 'desc' }],
+  });
 };
 
-export const getTransactions = async (dbOptions = {}) => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User is not logged in!');
-
-  const transactions = await db.transaction.findMany({
-    where: { userId: session.user.id },
-    ...dbOptions,
-  });
-
-  return transactions;
+export const getTransactionCount = async (range: DateRange = {}) => {
+  const id = await userId();
+  return db.transaction.count({ where: { userId: id, timestamp: dateBounds(range) } });
 };
 
-export const getTransactionCount = async (dbOptions = {}) => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User is not logged in!');
-
-  const count = await db.transaction.count(dbOptions);
-
-  return count;
-};
-
-/* Create new Budget */
-
-export const createBudget = async (formData: FormData) => {
-  const name = formData.get('name') as string;
-  const max = Number.parseFloat(formData.get('max') as string);
-  const categoryIds = JSON.parse(formData.get('categoryIds') as string);
-
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User not logged in');
-
-  const categories = await db.transactionCategory.findMany({
-    where: { id: { in: categoryIds } },
-  });
-
-  await db.budget.create({
-    data: {
-      name: name,
-      max: Prisma.Decimal(max),
-      user: {
-        connect: {
-          id: session.user.id,
-        },
+export const createBudget = async (data: FormData) => mutate(async (id) => {
+  const { categoryIds, max, ...values } = budgetInput(data);
+  await db.$transaction(async (tx) => {
+    await checkCategories(tx, id, categoryIds);
+    await tx.budget.create({
+      data: {
+        ...values, max: new Prisma.Decimal(max), userId: id,
+        categories: { connect: [...new Set(categoryIds)].map((id) => ({ id })) },
       },
-      categories: {
-        connect: categories,
+    });
+  });
+});
+
+export const updateBudget = async (data: FormData, budgetId: number) => mutate(async (id) => {
+  const { categoryIds, max, ...values } = budgetInput(data);
+  await db.$transaction(async (tx) => {
+    await checkCategories(tx, id, categoryIds);
+    await tx.budget.update({
+      where: { id: RecordIdSchema.parse(budgetId), userId: id },
+      data: {
+        ...values, max: new Prisma.Decimal(max),
+        categories: { set: [...new Set(categoryIds)].map((id) => ({ id })) },
       },
-    },
+    });
   });
-  revalidatePath('/budgets');
-  return { success: true };
+});
+
+export const deleteBudget = async (budgetId: number) => mutate(async (id) => {
+  await db.budget.delete({ where: { id: RecordIdSchema.parse(budgetId), userId: id } });
+});
+
+export const getBudgets = async (options: Pagination = {}) => {
+  const id = await userId();
+  return db.budget.findMany({
+    where: { userId: id },
+    ...pagination(options),
+    include: { categories: { select: { name: true, id: true } } },
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+  });
 };
 
-export const getBudgets = async (dbOptions = {}) => {
-  const session = await auth();
+export const getBudgetCount = async () => db.budget.count({
+  where: { userId: await userId() },
+});
 
-  if (!session?.user) throw new Error('User not logged in');
+export const getIncome = async (range: DateRange = {}) => db.transaction.aggregate({
+  _sum: { amount: true },
+  where: { userId: await userId(), type: 'INCOME', timestamp: dateBounds(range) },
+});
 
-  const budgets = await db.budget.findMany({
-    where: {
-      userId: session.user.id,
-    },
-    ...dbOptions,
-  });
+export const getExpense = async (range: DateRange = {}) => db.transaction.aggregate({
+  _sum: { amount: true },
+  where: { userId: await userId(), type: 'EXPENSE', timestamp: dateBounds(range) },
+});
 
-  return budgets;
+export const getExpensesByCategory = async (range: DateRange = {}) => db.transaction.groupBy({
+  by: ['categoryId'],
+  _sum: { amount: true },
+  where: { userId: await userId(), type: 'EXPENSE', timestamp: dateBounds(range) },
+});
+
+export const getExpenseVsIncome = async (step: 'day' | 'week' | 'month', range: DateRange = {}) => {
+  const id = await userId();
+  z.enum(['day', 'week', 'month']).parse(step);
+  const bounds = dateBounds(range);
+  const rows = await db.$queryRawTyped(incomeExpense(
+    step,
+    bounds?.gte.toISOString() ?? '0001-01-01T00:00:00.000Z',
+    bounds?.lt.toISOString() ?? '9999-12-31T23:59:59.999Z',
+    id
+  ));
+  return rows.map((row) => ({
+    period: row.period?.toISOString(),
+    totalExpense: row.totalexpense?.toNumber() ?? 0,
+    totalIncome: row.totalincome?.toNumber() ?? 0,
+  }));
 };
 
-export const deleteBudget = async (budgetId: number) => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User not logged in');
-
-  await db.budget.delete({
-    where: {
-      id: budgetId,
-    },
-  });
-
-  revalidatePath('/budgets');
-  return { success: true };
-};
-
-export const updateBudget = async (formData: FormData, budgetId: number) => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User not logged in');
-
-  const name = formData.get('name') as string;
-  const max = Number.parseFloat(formData.get('max') as string);
-  const categoryIds = JSON.parse(formData.get('categoryIds') as string);
-
-  const categories = await db.transactionCategory.findMany({
-    where: { id: { in: categoryIds } },
-  });
-
-  await db.budget.update({
-    where: {
-      id: budgetId,
-    },
-    data: {
-      name: name,
-      max: Prisma.Decimal(max),
-      user: {
-        connect: {
-          id: session.user.id,
-        },
-      },
-      categories: {
-        connect: categories,
-      },
-    },
-  });
-  revalidatePath('/budgets');
-  return { success: true };
-};
-
-export const getBudgetCount = async (dbOptions = {}) => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User not logged in');
-
-  const count = await db.budget.count(dbOptions);
-
-  return count;
-};
-
-/* Report functions */
-
-export const getExpenseVsIncome = async (
-  step: string,
-  startDate?: string,
-  endDate?: string
+export const getBudgetWithAmount = async (
+  expenses: { categoryId: number | null; _sum: { amount: Prisma.Decimal | null } }[]
 ) => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User not logged in');
-
-  const queryResult = await db.$queryRawTyped(
-    incomeExpense(
-      step,
-      startDate ?? '1000-01-01',
-      endDate ?? new Date().toISOString(),
-      session.user.id as string
-    )
-  );
-
-  const result = queryResult.map((res) => ({
-    period: res.period?.toLocaleString(),
-    totalExpense: res.totalexpense?.toNumber(),
-    totalIncome: res.totalincome?.toNumber(),
-  }));
-
-  return result;
-};
-
-export const getIncome = async (startDate: Date, endDate: Date) => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User not logged in');
-
-  const income =
-    startDate && endDate
-      ? await db.transaction.aggregate({
-          _sum: {
-            amount: true,
-          },
-          where: {
-            type: TransactionType.INCOME,
-            userId: session.user.id,
-            timestamp: {
-              lte: endDate,
-              gte: startDate,
-            },
-          },
-        })
-      : await db.transaction.aggregate({
-          _sum: {
-            amount: true,
-          },
-          where: { type: TransactionType.INCOME, userId: session.user.id },
-        });
-  return income;
-};
-
-export const getExpense = async (startDate: Date, endDate: Date) => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User not logged in');
-
-  const expense =
-    startDate && endDate
-      ? await db.transaction.aggregate({
-          _sum: {
-            amount: true,
-          },
-          where: {
-            type: TransactionType.EXPENSE,
-            userId: session.user.id,
-            timestamp: {
-              lte: endDate,
-              gte: startDate,
-            },
-          },
-        })
-      : await db.transaction.aggregate({
-          _sum: {
-            amount: true,
-          },
-          where: { type: TransactionType.EXPENSE, userId: session.user.id },
-        });
-  return expense;
-};
-
-export const getBudgetWithAmount = async (expensesByCategory: any) => {
-  const budgets = (
-    (await getBudgets({
-      include: { categories: { select: { name: true, id: true } } },
-    })) as PrismaBudgetWithCategory[]
-  ).map((budget) => ({
-    ...budget,
-    max: budget.max.toNumber(),
-    categoryIds: budget.categories.map((category) => category.id),
-  }));
-
-  /* 
-      Maps over all of the user's budgets and then finds the corresponding categories expenses' and sums it all up
-    */
-  const budgetWithAmount = budgets.map((budget) => ({
+  const budgets = await getBudgets();
+  return budgets.map((budget) => ({
     name: budget.name,
-    max: budget.max,
-    amount: budget.categoryIds
-      .map((id) => {
-        const categoryExpense = expensesByCategory.find(
-          (cat: any) => cat.categoryId === id
-        );
-
-        return categoryExpense?._sum.amount
-          ? categoryExpense._sum.amount.toNumber()
-          : 0;
-      })
-      .reduce((acc, curr) => acc + curr, 0),
+    max: budget.max.toNumber(),
+    amount: budget.categories.reduce((total, category) => {
+      const spending = expenses.find((expense) => expense.categoryId === category.id);
+      return total.plus(spending?._sum.amount ?? 0);
+    }, new Prisma.Decimal(0)).toNumber(),
   }));
-
-  return budgetWithAmount;
-};
-
-/* Get Expenses by category */
-
-export const getExpensesByCategory = async (
-  startDate: string,
-  endDate: string
-) => {
-  const session = await auth();
-
-  if (!session?.user) throw new Error('User not logged in');
-
-  const expensesByCategory =
-    startDate && endDate
-      ? await db.transaction.groupBy({
-          by: ['categoryId'],
-          _sum: {
-            amount: true,
-          },
-          where: {
-            timestamp: {
-              lte: new Date(endDate),
-              gte: new Date(startDate),
-            },
-            type: TransactionType.EXPENSE,
-            userId: session.user.id,
-            category: {
-              id: {
-                not: undefined,
-              },
-            },
-          },
-        })
-      : await db.transaction.groupBy({
-          by: ['categoryId'],
-          _sum: {
-            amount: true,
-          },
-          where: {
-            type: TransactionType.EXPENSE,
-            userId: session.user.id,
-            category: {
-              id: {
-                not: undefined,
-              },
-            },
-          },
-        });
-
-  return expensesByCategory;
 };
