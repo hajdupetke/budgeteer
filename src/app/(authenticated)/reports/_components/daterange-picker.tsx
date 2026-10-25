@@ -40,12 +40,12 @@ export const DateRangePicker = ({ className }: { className?: string }) => {
   }
 
   return (
-    <div className={cn('flex items-center gap-2', className)}>
+    <div className={cn('flex flex-wrap items-center gap-2', className)}>
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="outline">
             <CalendarIcon aria-hidden="true" />
-            {range?.from ? `${format(range.from, 'LLL dd y')}${range.to ? ` – ${format(range.to, 'LLL dd y')}` : ''}` : 'Pick dates'}
+            {range?.from ? `${format(range.from, 'd MMM yyyy')}${range.to ? ` – ${format(range.to, 'd MMM yyyy')}` : ''}` : 'Pick dates'}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">

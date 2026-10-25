@@ -14,12 +14,12 @@
 
 ## 2. Refresh the core app design
 
-- [ ] **Establish a small visual baseline.** Reuse existing Tailwind/Radix components; standardize spacing, typography, card headers, button hierarchy, and semantic colors. Fix inconsistent utility classes rather than introducing another UI framework.
-- [ ] **Redesign the dashboard hierarchy.** Put income, expenses, and net balance first, followed by budget progress and supporting charts. Show the reporting period prominently, sensible empty states, and an obvious “Add transaction” action.
-- [ ] **Improve transactions and category management.** Make transactions the primary content; move categories into a secondary section or dialog. Use a readable desktop table and compact mobile rows, with aligned amounts and predictable edit/delete controls.
-- [ ] **Improve budget and report presentation.** Show spent, remaining, and over-budget amounts clearly. Add useful chart legends/tooltips, stable category colors beyond the current palette, and empty states for individual charts. Keep report controls readable on small screens.
-- [ ] **Polish the app shell and accessibility.** Check narrow-screen overflow, long names, dialogs, and sign-in buttons. Make mobile navigation close after selection, support Escape and keyboard focus, provide labels and visible focus states, and avoid communicating status through color alone.
-- [ ] **Finish interaction states and copy.** Set pending state before submissions, prevent duplicate writes, show actionable failures instead of console-only errors, and preserve form values on failure. Add lightweight loading/error boundaries and correct spelling, placeholders, and broken empty-state sentences.
+- [x] **Establish a small visual baseline.** Reuse existing Tailwind/Radix components; standardize spacing, typography, card headers, button hierarchy, and semantic colors. Fix inconsistent utility classes rather than introducing another UI framework.
+- [x] **Redesign the dashboard hierarchy.** Put income, expenses, and net balance first, followed by budget progress and supporting charts. Show the reporting period prominently, sensible empty states, and an obvious “Add transaction” action.
+- [x] **Improve transactions and category management.** Make transactions the primary content; move categories into a secondary section or dialog. Use a readable desktop table and compact mobile rows, with aligned amounts and predictable edit/delete controls.
+- [x] **Improve budget and report presentation.** Show spent, remaining, and over-budget amounts clearly. Add useful chart legends/tooltips, stable category colors beyond the current palette, and empty states for individual charts. Keep report controls readable on small screens.
+- [x] **Polish the app shell and accessibility.** Check narrow-screen overflow, long names, dialogs, and sign-in buttons. Make mobile navigation close after selection, support Escape and keyboard focus, provide labels and visible focus states, and avoid communicating status through color alone.
+- [x] **Finish interaction states and copy.** Set pending state before submissions, prevent duplicate writes, show actionable failures instead of console-only errors, and preserve form values on failure. Add lightweight loading/error boundaries and correct spelling, placeholders, and broken empty-state sentences.
 
 ## 3. Make setup and the demo dependable
 

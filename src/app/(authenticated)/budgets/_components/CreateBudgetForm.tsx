@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { createBudget } from '@/lib/actions';
 import { BudgetSchema } from '@/lib/validation';
 import { z } from 'zod';
+import { FieldGroup } from '@/components/ui/field';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -64,19 +66,18 @@ export default function CreateBudgetForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onFormSubmit)}>
+      <form onSubmit={form.handleSubmit(onFormSubmit)}><FieldGroup>
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
-            <FormItem className="mb-4">
-              <FormLabel className="text-md text-gray-800 font-semibold my-2">
-                Budget Name
+            <FormItem>
+              <FormLabel>
+                Budget name
               </FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Enter the name of the transaction"
-                  className="placeholder:text-slate-400 bg-white h-12 text-sm"
+                  placeholder="e.g. Groceries"
                   {...field}
                 />
               </FormControl>
@@ -88,8 +89,8 @@ export default function CreateBudgetForm({
           control={form.control}
           name="categoryIds"
           render={({ field }) => (
-            <FormItem className="my-4">
-              <FormLabel className="text-md text-gray-800 font-semibold my-2">
+            <FormItem>
+              <FormLabel>
                 Categories
               </FormLabel>
               <FormControl>
@@ -113,8 +114,8 @@ export default function CreateBudgetForm({
           render={({ field }) => {
             const isInvalid = form.formState.errors[field.name] !== undefined;
             return (
-              <FormItem className="my-4">
-                <FormLabel className="text-md text-gray-800 font-semibold my-2">
+              <FormItem>
+                <FormLabel>
                   Amount
                 </FormLabel>
                 <FormControl>
@@ -126,15 +127,15 @@ export default function CreateBudgetForm({
           }}
         />
 
-        {form.formState.errors.root && <p role="alert">{form.formState.errors.root.message}</p>}
+        {form.formState.errors.root && <Alert variant="destructive"><AlertDescription>{form.formState.errors.root.message}</AlertDescription></Alert>}
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded text-lg py-6 bg-primary-600 hover:bg-primary-700 box-shadow-md shadow-gray-600"
+          className="w-full"
         >
-          {isSubmitting ? 'Saving...' : 'Create Budget'}
+          {isSubmitting ? 'Saving...' : 'Add budget'}
         </Button>
-      </form>
+      </FieldGroup></form>
     </Form>
   );
 }

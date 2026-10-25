@@ -18,7 +18,7 @@ const EditTransaction = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
-        <DialogTitle className="text-2xl font-bold">
+        <DialogTitle >
           Edit a transaction
         </DialogTitle>
         <EditTransactionForm

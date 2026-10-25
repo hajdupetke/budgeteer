@@ -32,10 +32,5 @@ export default async function TransactionsPage({
   }
   if (changed) redirect(`/transactions?${canonical}`);
 
-  return (
-    <div className="flex gap-2 flex-wrap xl:flex-nowrap size-full">
-      <Transactions page={transactionPage} />
-      <Categories page={categoryPage} />
-    </div>
-  );
+  return <Transactions page={transactionPage} categoryManager={<Categories page={categoryPage} />} />;
 }

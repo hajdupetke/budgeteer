@@ -1,8 +1,10 @@
-import { clampPage } from '@/lib/finance';
+import { PageHeading } from '@/components/PageHeading';
+import { monthLabel } from '@/lib/report-presentation';
+import { clampPage, monthRange } from '@/lib/finance';
 
 import BudgetList from './BudgetList';
 import NewBudget from './NewBudget';
-import { getCategories, getBudgets, getBudgetCount } from '@/lib/actions';
+import { getCategories, getBudgets, getBudgetCount, getExpensesByCategory, getBudgetWithAmount } from '@/lib/actions';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 
@@ -25,30 +27,20 @@ const Budgets = async ({ page }: { page: number }) => {
     take: BUDGETS_PER_PAGE,
   });
 
+  const range = monthRange();
+  const spending = await getBudgetWithAmount(await getExpensesByCategory(range));
   const budgets = fetchedBudgets.map((budget) => ({
+    ...spending.find((item) => item.id === budget.id)!,
     ...budget,
     max: budget.max.toString(),
     categoryIds: budget.categories.map((category) => category.id),
   }));
 
-  return (
-    <div className="w-full">
-      <div className="flex items-center justify-between">
-        <h2 className="font-bold text-3xl">Budgets</h2>
-        <NewBudget categories={categories} />
-      </div>
-      <p>Monthly budgets use the current UTC calendar month. Budgets sharing categories each count the same spending.</p>
-      <div className="flex flex-wrap lg:flex-nowrap gap-2 lg:gap-4 items-center justify-center flex-row mt-4">
-        <BudgetList
-          budgets={budgets}
-          categories={categories}
-          page={page}
-          budgetCount={budgetCount}
-          pageSize={BUDGETS_PER_PAGE}
-        />
-      </div>
-    </div>
-  );
+  return <>
+    <PageHeading title="Budgets" description={`${monthLabel(range.startDate)} · Monthly limits, UTC`}><NewBudget categories={categories} /></PageHeading>
+    <BudgetList budgets={budgets} categories={categories} page={page} budgetCount={budgetCount} pageSize={BUDGETS_PER_PAGE} />
+    <p className="page-description">Budgets sharing categories each count the same spending.</p>
+  </>;
 };
 
 export default Budgets;

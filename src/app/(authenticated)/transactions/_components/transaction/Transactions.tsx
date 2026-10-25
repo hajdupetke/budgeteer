@@ -1,75 +1,28 @@
+import { type ReactNode } from 'react';
 import { clampPage } from '@/lib/finance';
 import TransactionList from './TransactionList';
 import NewTransaction from './NewTransaction';
-import {
-  getTransactionCount,
-  getTransactions,
-  getCategories,
-} from '@/lib/actions';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardFooter,
-} from '@/components/ui/card';
+import { getTransactionCount, getTransactions, getCategories } from '@/lib/actions';
 import { PaginationWithLinks } from '@/components/ui/pagination-with-links';
-import { auth } from '@/lib/auth';
-import { redirect } from 'next/navigation';
+import { PageHeading } from '@/components/PageHeading';
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/empty';
 
 const TRANSACTION_ITEMS_PER_PAGE = 6;
-
-const Transactions = async ({ page }: { page: number }) => {
-  const session = await auth();
-
-  if (!session?.user) redirect('/sign-in');
-
-  const transactionCount = await getTransactionCount();
-
-  page = clampPage(page, transactionCount, TRANSACTION_ITEMS_PER_PAGE);
-  const categories = await getCategories();
-
-  const transactions = (
-    await getTransactions({
-      skip: (page - 1) * TRANSACTION_ITEMS_PER_PAGE,
-      take: TRANSACTION_ITEMS_PER_PAGE,
-    })
-  ).map((transaction) => ({
-    ...transaction,
-    amount: transaction.amount.toString(),
-  }));
-
-  return (
-    <Card className="size-full py-4 gap-4">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <h2 className="font-bold text-3xl">Transactions</h2>
-          <NewTransaction categories={categories} />
-        </div>
-      </CardHeader>
-      {transactionCount > 0 ? (
-        <>
-          <CardContent>
-            <TransactionList
-              transactions={transactions}
-              categories={categories}
-            />
-          </CardContent>
-          <CardFooter>
-            <PaginationWithLinks
-              page={page}
-              totalCount={transactionCount}
-              pageSize={TRANSACTION_ITEMS_PER_PAGE}
-              pageSearchParam="transactionPage"
-            />
-          </CardFooter>
-        </>
-      ) : (
-        <CardContent className="flex justify-center">
-          You haven&apos;t provided any transactions yet!
-        </CardContent>
-      )}
-    </Card>
-  );
-};
-
-export default Transactions;
+export default async function Transactions({ page, categoryManager }: { page: number; categoryManager: ReactNode }) {
+  const count = await getTransactionCount();
+  page = clampPage(page, count, TRANSACTION_ITEMS_PER_PAGE);
+  const [categories, rows] = await Promise.all([
+    getCategories(), getTransactions({ skip: (page - 1) * TRANSACTION_ITEMS_PER_PAGE, take: TRANSACTION_ITEMS_PER_PAGE }),
+  ]);
+  const transactions = rows.map((transaction) => ({ ...transaction, amount: transaction.amount.toString() }));
+  return <>
+    <PageHeading title="Transactions" description="Your income and expenses, all in one place.">
+      {categoryManager}<NewTransaction categories={categories} />
+    </PageHeading>
+    {count > 0 ? <>
+      <TransactionList transactions={transactions} categories={categories} />
+      <PaginationWithLinks page={page} totalCount={count} pageSize={TRANSACTION_ITEMS_PER_PAGE} pageSearchParam="transactionPage" />
+      <p className="page-description">{count} {count === 1 ? 'transaction' : 'transactions'} · Amounts in EUR · Dates in UTC</p>
+    </> : <div className="rounded-xl border bg-card"><Empty><EmptyHeader><EmptyTitle>Start with your first transaction</EmptyTitle><EmptyDescription>Add income or an expense. Your monthly overview and reports will update automatically.</EmptyDescription></EmptyHeader></Empty></div>}
+  </>;
+}

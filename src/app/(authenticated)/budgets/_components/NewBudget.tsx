@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogTrigger,
@@ -18,18 +18,10 @@ const NewBudget = ({ categories }: { categories: MultiSelectOption[] }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button
-          onClick={() => setOpen(true)}
-          className={`${buttonVariants({
-            variant: 'default',
-            size: 'xl',
-          })} !bg-primary-600 !mr-4 !rounded-3xl hover:!bg-primary-800 !font-bold text-lg uppercase cursor-pointer`}
-        >
-          Create new budget
-        </button>
+        <Button>Add budget</Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogTitle className="text-2xl font-bold">
+        <DialogTitle >
           Create a new budget
         </DialogTitle>
         <CreateBudgetForm

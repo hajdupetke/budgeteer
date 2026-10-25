@@ -33,3 +33,13 @@ docker rm budgeteer-correctness-test
 - Checked monthly dashboard totals and uncategorized data; normalized pagination and deleting the last item on page 2; transaction category clearing; client/server submission errors preserving values; switching budgets and replacing categories; report date clearing, history navigation, and invalid dates; and empty dashboard/report states for the second account.
 
 These checks do not exercise a real OAuth provider login. Package-manager migration and dependency maintenance remain in TODO section 3.
+
+
+## Core-app redesign acceptance pass (2026-10-25)
+
+- 49 unit tests and 11 PostgreSQL integration tests passed. Added focused checks for budget remaining/over-budget values, capped progress, and category colors that remain stable across sorting, renaming, and palette overflow.
+- Prisma generation, lint, TypeScript, and the production build passed using pnpm. No database schema migration was required.
+- Chromium acceptance checks ran against the production build with fictional data in an isolated database. Checked all four screens at 1440px and 390px; 320px overflow; tablet layouts; and an effective 200% desktop viewport.
+- Verified dashboard transaction creation, client validation, uncategorized data, category editing in one dialog, budget category removal using the keyboard, category replacement, form resets, date clearing, invalid-date feedback, mobile navigation closing/focus return, and empty states for a second account. No browser runtime errors occurred.
+- Independent visual review found transaction actions clipped in the tablet table. Compact rows now remain below 1280px. Production checks confirmed Edit/Delete visibility and keyboard focus at 768, 1023, 1024, 1279, 1280, and 1440px. The reviewer scored this finding resolved and returned **ship** for the correction.
+- No PRODUCT.md, DESIGN.md, design sidecars, or surface briefs were created, as requested. OAuth provider sign-in remains outside this local acceptance pass.

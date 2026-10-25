@@ -6,6 +6,8 @@ import { PreviewConfig } from 'emoji-picker-react/dist/config/config';
 import { createTransactionCategory } from '@/lib/actions';
 import { TransactionCategorySchema } from '@/lib/validation';
 import { z } from 'zod';
+import { FieldGroup } from '@/components/ui/field';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -67,21 +69,21 @@ export default function CreateCategoryForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onFormSubmit)}>
+      <form onSubmit={form.handleSubmit(onFormSubmit)}><FieldGroup>
         <FormField
           control={form.control}
           name="icon"
           render={({ field }) => (
-            <FormItem className="my-4">
-              <FormLabel className="text-md text-gray-800 font-semibold">
-                Category Icon
+            <FormItem>
+              <FormLabel>
+                Category icon
               </FormLabel>
-              <FormControl>
-                <div className="relative">
+              <div>
+                <FormControl>
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full justify-start text-slate-400 h-12 text-sm"
+                    className="w-full justify-start"
                     aria-invalid={
                       form.formState.errors[field.name] !== undefined
                     }
@@ -93,11 +95,14 @@ export default function CreateCategoryForm({
                       'Select an emoji'
                     )}
                   </Button>
+                </FormControl>
                   {
                     /* Show EmojiPicker when button is pressed */
                     showPicker && (
-                      <div className="absolute z-10 mt-1">
+                      <div className="mt-2">
                         <EmojiPicker
+                          width="100%"
+                          height={320}
                           onEmojiClick={(emojiObj: EmojiClickData) => {
                             field.onChange(emojiObj.emoji);
                             setShowPicker(false);
@@ -108,7 +113,6 @@ export default function CreateCategoryForm({
                     )
                   }
                 </div>
-              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -117,14 +121,13 @@ export default function CreateCategoryForm({
           control={form.control}
           name="name"
           render={({ field }) => (
-            <FormItem className="my-4">
-              <FormLabel className="text-md text-gray-800 font-semibold">
-                Category Name
+            <FormItem>
+              <FormLabel>
+                Category name
               </FormLabel>
               <FormControl>
                 <Input
                   placeholder="Enter category name"
-                  className="placeholder:text-slate-400 bg-white h-12 text-sm"
                   {...field}
                 />
               </FormControl>
@@ -133,15 +136,15 @@ export default function CreateCategoryForm({
           )}
         />
 
-        {form.formState.errors.root && <p role="alert">{form.formState.errors.root.message}</p>}
+        {form.formState.errors.root && <Alert variant="destructive"><AlertDescription>{form.formState.errors.root.message}</AlertDescription></Alert>}
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded text-lg py-6 bg-primary-600 hover:bg-primary-700 box-shadow-md shadow-gray-600"
+          className="w-full"
         >
-          {isSubmitting ? 'Saving...' : 'Create Category'}
+          {isSubmitting ? 'Saving...' : 'Add category'}
         </Button>
-      </form>
+      </FieldGroup></form>
     </Form>
   );
 }

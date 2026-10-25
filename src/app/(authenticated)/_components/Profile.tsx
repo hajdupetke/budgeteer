@@ -1,26 +1,17 @@
 import { auth } from '@/lib/auth';
 import Image from 'next/image';
-import { CircleUserIcon } from 'lucide-react';
+import { CircleUserRound } from 'lucide-react';
 
-const Profile = async () => {
+export default async function Profile() {
   const session = await auth();
-
   return (
-    <div className="flex items-center gap-4 my-8 px-2">
-      {session?.user?.image ? (
-        <Image
-          src={session?.user?.image as string}
-          alt={`${session?.user?.name}'s avatar`}
-          width={100}
-          height={100}
-          className="h-10 w-10 rounded-full border"
-        />
-      ) : (
-        <CircleUserIcon stroke="#65009c" />
-      )}
-      <span className="font-bold">{session?.user?.name}</span>
+    <div className="flex min-w-0 items-center gap-3 border-t pt-5">
+      {session?.user?.image ? <Image src={session.user.image} alt="" width={36} height={36} className="size-9 shrink-0 rounded-full" />
+        : <CircleUserRound className="size-9 shrink-0 text-muted-foreground" aria-hidden="true" />}
+      <div className="min-w-0">
+        <p className="truncate text-sm font-semibold" title={session?.user?.name ?? undefined}>{session?.user?.name ?? 'Your account'}</p>
+        <p className="text-xs text-muted-foreground">Personal workspace</p>
+      </div>
     </div>
   );
-};
-
-export default Profile;
+}

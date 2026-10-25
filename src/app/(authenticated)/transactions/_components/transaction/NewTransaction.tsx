@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { TransactionCategory } from '@prisma/client';
 import {
@@ -23,20 +23,11 @@ const NewTransaction = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          aria-label="Add transaction"
-          onClick={() => setOpen(true)}
-          className={`${buttonVariants({
-            variant: 'default',
-            size: 'xl',
-          })} !bg-primary-600 !w-10 !h-10 !mr-0 !p-0 !rounded-3xl hover:!bg-primary-800`}
-        >
-          <Plus />
-        </Button>
+        <Button><Plus data-icon="inline-start" />Add transaction</Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogTitle className="text-2xl font-bold">
-          Create new transaction
+        <DialogTitle >
+          Add a transaction
         </DialogTitle>
         <CreateTransactionForm
           categories={categories}

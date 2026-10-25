@@ -7,6 +7,7 @@ import { incomeExpense } from '@prisma/client/sql';
 import { z } from 'zod';
 import { auth, signOut } from './auth';
 import { db } from './db';
+import { budgetSpending } from './budget';
 import {
   InputError,
   RecordIdSchema,
@@ -239,12 +240,17 @@ export const getBudgetWithAmount = async (
   expenses: { categoryId: number | null; _sum: { amount: Prisma.Decimal | null } }[]
 ) => {
   const budgets = await getBudgets();
-  return budgets.map((budget) => ({
-    name: budget.name,
-    max: budget.max.toNumber(),
-    amount: budget.categories.reduce((total, category) => {
+  return budgets.map((budget) => {
+    const spent = budget.categories.reduce((total, category) => {
       const spending = expenses.find((expense) => expense.categoryId === category.id);
       return total.plus(spending?._sum.amount ?? 0);
-    }, new Prisma.Decimal(0)).toNumber(),
-  }));
+    }, new Prisma.Decimal(0));
+    return {
+      id: budget.id,
+      name: budget.name,
+      max: budget.max.toNumber(),
+      amount: spent.toNumber(),
+      ...budgetSpending(budget.max, spent),
+    };
+  });
 };

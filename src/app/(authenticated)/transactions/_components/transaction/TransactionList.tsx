@@ -1,99 +1,55 @@
 'use client';
-import { formatMoney } from '@/lib/finance';
 
-import { TransactionWithCategory } from '@/types/transaction';
 import { useState } from 'react';
+import { type TransactionCategory } from '@prisma/client';
+import { ArrowDownLeft, ArrowUpRight, Pencil, Trash2 } from 'lucide-react';
+import { formatMoney } from '@/lib/finance';
+import { shortDate } from '@/lib/report-presentation';
+import { type TransactionWithCategory } from '@/types/transaction';
 import { Button } from '@/components/ui/button';
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell, TableCaption } from '@/components/ui/table';
 import EditTransaction from './EditTransaction';
-import { TransactionCategory, TransactionType } from '@prisma/client';
 import DeleteTransaction from './DeleteTransaction';
-import { TrendingUp, TrendingDown } from 'lucide-react';
 
-const TransactionList = ({
-  transactions,
-  categories,
-}: {
-  transactions: TransactionWithCategory[];
-  categories: TransactionCategory[];
-}) => {
+export default function TransactionList({ transactions, categories }: { transactions: TransactionWithCategory[]; categories: TransactionCategory[] }) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selected, setSelected] = useState<TransactionWithCategory | null>(null);
-
-  return (
-    <>
-      <div className="grid grid-cols-4 items-center justify-between py-4">
-        <p className="font-semibold text-gray-500 text-center">Name</p>
-        <p className="font-semibold text-gray-500 text-center">Amount</p>
-        <p className="font-semibold text-gray-500 text-center">Date</p>
-        <p className="basis-2/6 text-center font-semibold text-gray-500">
-          Actions
-        </p>
-      </div>
-      {transactions.map((transaction) => (
-        <div
-          key={transaction.id}
-          className="grid grid-cols-4  items-center justify-between py-4 border-t-2 border-gray-100"
-        >
-          <p className="text-2xl flex items-center justify-center gap-4">
-            {transaction.type === TransactionType.INCOME ? (
-              <TrendingUp className="text-success-600" />
-            ) : (
-              <TrendingDown className="text-warning-600" />
-            )}
-            <span title={transaction.category?.name ?? 'Uncategorized'}>{transaction.category?.icon ?? <span className="text-sm">Uncategorized</span>}</span>
-            <span className="text-lg font-semibold flex items-center gap-2">
-              {transaction.name}{' '}
-            </span>
-          </p>
-          <p className="text-center">{formatMoney(transaction.amount)}</p>
-          <p className="text-center" title="UTC">
-            {transaction.timestamp.toLocaleString('en-us', {
-              year: 'numeric',
-              month: '2-digit',
-              day: '2-digit',
-
-              hour12: false,
-              timeZone: 'UTC',
-            })}
-          </p>
-          <div className="flex items-center justify-center gap-4">
-            <Button
-              className="w-content bg-transparent! shadow-none! text-gray-500 font-bold hover:underline hover:text-gray-900 !p-0"
-              onClick={() => {
-                setSelected(transaction);
-                setDeleteOpen(true);
-              }}
-            >
-              Delete
-            </Button>
-
-            <Button
-              className="bg-primary-200 text-primary-900 font-bold hover:bg-primary-300 transition-colors rounded-xl"
-              onClick={() => {
-                setSelected(transaction);
-                setEditOpen(true);
-              }}
-            >
-              Edit
-            </Button>
-          </div>
-        </div>
-      ))}
-
-      {selected && editOpen && (<EditTransaction
-        transaction={selected}
-        open={editOpen}
-        setOpen={(bool) => setEditOpen(bool)}
-        categories={categories}
-      />)}
-      {selected && deleteOpen && (<DeleteTransaction
-        transaction={selected}
-        open={deleteOpen}
-        setOpen={(bool) => setDeleteOpen(bool)}
-      />)}
-    </>
-  );
-};
-
-export default TransactionList;
+  function actions(transaction: TransactionWithCategory) {
+    return <div className="flex justify-end gap-1">
+      <Button variant="ghost" size="icon" aria-label={`Edit ${transaction.name}`} onClick={() => { setSelected(transaction); setEditOpen(true); }}><Pencil /></Button>
+      <Button variant="ghost" size="icon" aria-label={`Delete ${transaction.name}`} onClick={() => { setSelected(transaction); setDeleteOpen(true); }}><Trash2 /></Button>
+    </div>;
+  }
+  function name(transaction: TransactionWithCategory) {
+    const income = transaction.type === 'INCOME';
+    const Icon = income ? ArrowDownLeft : ArrowUpRight;
+    return <div className="flex min-w-0 items-center gap-3">
+      <span className={income ? 'text-positive' : 'text-muted-foreground'}><Icon className="size-[18px]" aria-hidden="true" /></span>
+      <div className="min-w-0"><p className="truncate font-semibold" title={transaction.name}>{transaction.name}</p><p className="mt-0.5 text-xs text-muted-foreground">{income ? 'Income' : 'Expense'}</p></div>
+    </div>;
+  }
+  return <>
+    <div className="hidden overflow-hidden rounded-xl border bg-card xl:block">
+      <Table>
+        <TableCaption className="sr-only">Transactions with amounts in EUR and dates in UTC</TableCaption>
+        <TableHeader><TableRow><TableHead>Transaction</TableHead><TableHead>Category</TableHead><TableHead>Date (UTC)</TableHead><TableHead className="text-right">Amount</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+        <TableBody>{transactions.map((transaction) => <TableRow key={transaction.id}>
+          <TableCell className="max-w-[260px]">{name(transaction)}</TableCell>
+          <TableCell className="max-w-[180px]"><p className="truncate text-muted-foreground" title={transaction.category?.name ?? 'Uncategorized'}>{transaction.category?.icon && <span aria-hidden="true">{transaction.category.icon} </span>}{transaction.category?.name ?? 'Uncategorized'}</p></TableCell>
+          <TableCell className="whitespace-nowrap text-muted-foreground"><time dateTime={transaction.timestamp.toISOString()}>{shortDate(transaction.timestamp)}</time></TableCell>
+          <TableCell className="money whitespace-nowrap text-right font-bold">{transaction.type === 'INCOME' ? '+' : '−'}{formatMoney(transaction.amount)}</TableCell>
+          <TableCell>{actions(transaction)}</TableCell>
+        </TableRow>)}</TableBody>
+      </Table>
+    </div>
+    <ul className="flex min-w-0 flex-col divide-y rounded-xl border bg-card px-4 xl:hidden">
+      {transactions.map((transaction) => <li key={transaction.id} className="flex min-w-0 flex-col gap-3 py-4">
+        <div className="flex min-w-0 items-start justify-between gap-3"><div className="min-w-0">{name(transaction)}</div><p className="money shrink-0 text-sm font-bold">{transaction.type === 'INCOME' ? '+' : '−'}{formatMoney(transaction.amount)}</p></div>
+        <div className="flex min-w-0 items-center justify-between gap-2"><div className="min-w-0 text-xs text-muted-foreground"><p className="truncate" title={transaction.category?.name ?? 'Uncategorized'}>{transaction.category?.name ?? 'Uncategorized'}</p><time dateTime={transaction.timestamp.toISOString()}>{shortDate(transaction.timestamp)} · UTC</time></div>{actions(transaction)}</div>
+      </li>)}
+    </ul>
+    {selected && editOpen && <EditTransaction transaction={selected} open={editOpen} setOpen={setEditOpen} categories={categories} />}
+    {selected && deleteOpen && <DeleteTransaction transaction={selected} open={deleteOpen} setOpen={setDeleteOpen} />}
+  </>;
+}

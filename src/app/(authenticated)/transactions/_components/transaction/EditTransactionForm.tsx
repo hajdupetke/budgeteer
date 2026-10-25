@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { updateTransaction } from '@/lib/actions';
 import { TransactionSchema } from '@/lib/validation';
 import { z } from 'zod';
+import { FieldGroup } from '@/components/ui/field';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -87,19 +89,18 @@ export default function EditTransactionForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onFormSubmit)}>
+      <form onSubmit={form.handleSubmit(onFormSubmit)}><FieldGroup>
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
-            <FormItem className="my-4">
-              <FormLabel className="text-md text-gray-800 font-semibold my-2">
-                Transaction Name
+            <FormItem>
+              <FormLabel>
+                Name
               </FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Enter the name of the transaction"
-                  className="placeholder:text-slate-400 bg-white h-12 text-sm"
+                  placeholder="e.g. Weekly groceries"
                   {...field}
                 />
               </FormControl>
@@ -111,13 +112,13 @@ export default function EditTransactionForm({
           control={form.control}
           name="type"
           render={({ field }) => (
-            <FormItem className="my-4">
-              <FormLabel className="text-md text-gray-800 font-semibold my-2">
-                Transaction Type
+            <FormItem>
+              <FormLabel>
+                Type
               </FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
-                  <SelectTrigger className="w-full placeholder:text-slate-400 bg-white !h-12 text-sm">
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select transaction type" />
                   </SelectTrigger>
                 </FormControl>
@@ -136,8 +137,8 @@ export default function EditTransactionForm({
           control={form.control}
           name="amount"
           render={({ field }) => (
-            <FormItem className="my-4">
-              <FormLabel className="text-md text-gray-800 font-semibold my-2">
+            <FormItem>
+              <FormLabel>
                 Amount
               </FormLabel>
               <FormControl>
@@ -155,8 +156,8 @@ export default function EditTransactionForm({
           control={form.control}
           name="categoryId"
           render={({ field }) => (
-            <FormItem className="my-4">
-              <FormLabel className="text-md text-gray-800 font-semibold my-2">
+            <FormItem>
+              <FormLabel>
                 Category
               </FormLabel>
               <Select
@@ -164,7 +165,7 @@ export default function EditTransactionForm({
                 value={field.value?.toString() ?? 'uncategorized'}
               >
                 <FormControl>
-                  <SelectTrigger className="w-full placeholder:text-slate-400 bg-white !h-12 text-sm">
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                 </FormControl>
@@ -193,9 +194,9 @@ export default function EditTransactionForm({
           control={form.control}
           name="timestamp"
           render={({ field }) => (
-            <FormItem className="my-4">
-              <FormLabel className="text-md text-gray-800 font-semibold my-2">
-                Timestamp
+            <FormItem>
+              <FormLabel>
+                Date and time
               </FormLabel>
               <FormControl>
                 <DateTimePicker
@@ -213,15 +214,15 @@ export default function EditTransactionForm({
           )}
         />
 
-        {form.formState.errors.root && <p role="alert">{form.formState.errors.root.message}</p>}
+        {form.formState.errors.root && <Alert variant="destructive"><AlertDescription>{form.formState.errors.root.message}</AlertDescription></Alert>}
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded text-lg py-6 bg-primary-600 hover:bg-primary-700 box-shadow-md shadow-gray-600"
+          className="w-full"
         >
-          {isSubmitting ? 'Saving...' : 'Edit Transaction'}
+          {isSubmitting ? 'Saving...' : 'Save changes'}
         </Button>
-      </form>
+      </FieldGroup></form>
     </Form>
   );
 }

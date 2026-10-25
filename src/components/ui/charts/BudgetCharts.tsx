@@ -1,73 +1,17 @@
-'use client';
-import { formatMoney } from '@/lib/finance';
+import Link from 'next/link';
+import { BudgetProgress } from '@/components/BudgetProgress';
+import { type BudgetSummary } from '@/types/budget';
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent } from '@/components/ui/empty';
+import { Button } from '@/components/ui/button';
 
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart';
-
-const chartConfig = {
-  amount: {
-    label: 'Spent',
-  },
-  remaining: {
-    label: 'Remaining',
-  },
-} satisfies ChartConfig;
-
-export function BudgetCharts({
-  chartData,
-}: {
-  chartData: { name: string; max: number; amount: number }[];
-}) {
-  const remainingChartData = chartData.map((chartObj) => ({
-    name: chartObj.name,
-    amount: chartObj.amount,
-    remaining:
-      chartObj.max - chartObj.amount > 0 ? chartObj.max - chartObj.amount : 0,
-  }));
-
-  return (
-    <Card className="size-full py-4">
-      <CardHeader>
-        <CardTitle>Budgets</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {chartData.length === 0 ? <p>No data for this period.</p> : <ChartContainer config={chartConfig}>
-          <BarChart
-            barCategoryGap={8}
-            data={remainingChartData}
-            layout="vertical"
-            stackOffset="none"
-            margin={{ top: 10, right: 10, left: 0, bottom: 20 }}
-          >
-            <CartesianGrid horizontal strokeDasharray="3 3" />
-            <XAxis type="number" tickFormatter={formatMoney} />
-            <YAxis dataKey="name" type="category" width={90} />
-            <ChartTooltip
-              content={<ChartTooltipContent formatter={(value, name) => <><span>{name === 'amount' ? 'Spent' : 'Remaining'}</span><span>{formatMoney(String(value))}</span></>} hideLabel className="w-40" />}
-            />
-
-            <Bar
-              dataKey="amount"
-              stackId="a"
-              fill="var(--color-primary-700)"
-              radius={0}
-            />
-            <Bar
-              dataKey="remaining"
-              stackId="a"
-              fill="var(--color-primary-200)"
-              radius={0}
-            />
-          </BarChart>
-        </ChartContainer>}
-      </CardContent>
-    </Card>
-  );
+export function BudgetCharts({ chartData }: { chartData: BudgetSummary[] }) {
+  if (chartData.length === 0) return <div className="rounded-xl border bg-card">
+    <Empty><EmptyHeader><EmptyTitle>Give your spending a plan</EmptyTitle><EmptyDescription>Create a budget for the categories you want to keep an eye on.</EmptyDescription></EmptyHeader><EmptyContent><Button asChild variant="outline"><Link href="/budgets">Create a budget</Link></Button></EmptyContent></Empty>
+  </div>;
+  return <div className="grid min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-3">
+    {chartData.map((budget) => <article key={budget.id} className="flex min-w-0 flex-col gap-5 rounded-xl border bg-card p-5">
+      <h3 className="truncate font-bold" title={budget.name}>{budget.name}</h3>
+      <BudgetProgress budget={budget} />
+    </article>)}
+  </div>;
 }

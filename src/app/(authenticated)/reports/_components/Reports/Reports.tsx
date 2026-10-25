@@ -3,25 +3,21 @@ import { getCategories, getExpensesByCategory, getExpenseVsIncome, getBudgetWith
 import { BudgetCharts } from '@/components/ui/charts/BudgetCharts';
 import { IncomeExpenseChart } from '@/components/ui/charts/IncomeExpenseChart';
 import { type DateRange } from '@/lib/finance';
+import { categoryChartData } from '@/lib/report-presentation';
 
 export const Reports = async ({ date }: { date: DateRange }) => {
   const [categories, expenses, incomeExpense] = await Promise.all([
     getCategories(), getExpensesByCategory(date), getExpenseVsIncome('week', date),
   ]);
-  const budgetData = await getBudgetWithAmount(expenses);
-  const categoryData = expenses.map((expense, index) => ({
-    category: categories.find((category) => category.id === expense.categoryId)?.name ?? 'Uncategorized',
-    sum: expense._sum.amount?.toNumber() ?? 0,
-    fill: `var(--chart-color-${index % 5 + 1})`,
-  }));
-  return (
-    <div className="flex gap-3 flex-col w-full">
-      <p>Budget spending covers the selected period. Budgets sharing categories each count the same spending.</p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <ExpensesByCategory chartData={categoryData} />
-        <BudgetCharts chartData={budgetData} />
-      </div>
+  const budgets = await getBudgetWithAmount(expenses);
+  return <>
+    <div className="grid min-w-0 gap-6 xl:grid-cols-[1.3fr_1fr]">
       <IncomeExpenseChart chartData={incomeExpense} />
+      <ExpensesByCategory chartData={categoryChartData(categories, expenses)} />
     </div>
-  );
+    <section className="flex flex-col gap-4" aria-labelledby="report-budgets">
+      <div><h2 id="report-budgets" className="text-lg font-bold">Budget breakdown</h2><p className="page-description mt-1">Selected-period spending against monthly limits. Limits are not prorated; budgets sharing categories each count the same spending.</p></div>
+      <BudgetCharts chartData={budgets} />
+    </section>
+  </>;
 };

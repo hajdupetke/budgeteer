@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "vercel-build": "prisma migrate deploy && prisma generate --sql && npx tsx prisma/seed.ts && next build",
-    "test": "vitest run tests/finance.test.ts",
+    "test": "vitest run tests/finance.test.ts tests/presentation.test.ts",
     "test:integration": "vitest run tests/actions.integration.test.ts"
   },
   "dependencies": {

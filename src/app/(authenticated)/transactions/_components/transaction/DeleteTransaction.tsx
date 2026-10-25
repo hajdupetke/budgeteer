@@ -26,14 +26,14 @@ const DeleteTransaction = ({
         <DialogHeader>
           <DialogTitle>Delete transaction</DialogTitle>
         </DialogHeader>
-        <p className="text-red-800">
+        <p className="text-sm text-muted-foreground">
           Are you sure you want to delete this transaction?
         </p>
-        <p className="text-red-800">This action cannot be undone.</p>
+        <p className="text-sm text-muted-foreground">This action cannot be undone.</p>
         <div className="flex gap-1 mt-4 justify-end">
           <Button
             onClick={() => setOpen(false)}
-            className="bg-transparent! shadow-none! text-gray-600 font-bold hover:text-gray-900 cursor-pointer"
+            variant="outline"
           >
             Cancel
           </Button>
@@ -54,7 +54,6 @@ const DeleteTransaction = ({
                 setPending(false);
               }
             }}
-            className="bg-warning-600! font-bold hover:bg-warning-800! cursor-pointer"
           >
             {pending ? 'Deleting...' : 'Delete'}
           </Button>

@@ -210,3 +210,85 @@
     }
   }
 }
+
+
+:root {
+  --radius: 0.75rem;
+  --background: #ffffff;
+  --foreground: #1d2433;
+  --card: #ffffff;
+  --card-foreground: #1d2433;
+  --primary: #27272a;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f2f6;
+  --secondary-foreground: #343b4c;
+  --muted: #f1f2f6;
+  --muted-foreground: #626a7c;
+  --accent: #f1f2f6;
+  --accent-foreground: #343b4c;
+  --border: #e3e6ed;
+  --input: #d4d9e3;
+  --ring: #8840c4;
+  --destructive: #b82c44;
+  --positive: #237657;
+  --positive-muted: #edf7f1;
+  --negative-muted: #fff0f1;
+}
+
+.budgeteer-app {
+  --background: #f7f8fc;
+  --primary: #8133b8;
+  --primary-foreground: #ffffff;
+  --accent: #f3eafa;
+  --accent-foreground: #70269e;
+  color: var(--foreground);
+  background: var(--background);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-positive: var(--positive);
+  --color-positive-muted: var(--positive-muted);
+  --color-negative-muted: var(--negative-muted);
+}
+
+@layer base {
+  .budgeteer-app *, .budgeteer-app ::before, .budgeteer-app ::after {
+    border-color: var(--border);
+  }
+  .budgeteer-app ::selection { background: #ead5f6; color: #411763; }
+  .budgeteer-app button, .budgeteer-app a { -webkit-tap-highlight-color: transparent; }
+  .budgeteer-app :focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+  .budgeteer-app input { caret-color: var(--primary); }
+  .budgeteer-app h1, .budgeteer-app h2, .budgeteer-app h3 { text-wrap: balance; }
+  .budgeteer-app [data-slot="chart"] { outline-offset: 4px; }
+  @media (prefers-reduced-motion: reduce) {
+    .budgeteer-app *, .budgeteer-app ::before, .budgeteer-app ::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .page-title { font-size: 1.75rem; font-weight: 750; letter-spacing: -0.025em; line-height: 1.2; }
+  .page-description { color: var(--muted-foreground); font-size: 0.875rem; line-height: 1.6; }
+  .money { font-variant-numeric: tabular-nums; letter-spacing: -0.025em; }
+}

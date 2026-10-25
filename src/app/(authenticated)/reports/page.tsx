@@ -1,3 +1,7 @@
+import { PageHeading } from '@/components/PageHeading';
+import { shortDate } from '@/lib/report-presentation';
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/empty';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { DateRangePicker } from './_components/daterange-picker';
@@ -21,15 +25,11 @@ export default async function ReportsPage({ searchParams }: {
     error = cause instanceof Error ? cause.message : 'Choose a valid date range.';
   }
   const count = error ? 0 : await getTransactionCount(range);
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-4">
-        <h2 className="font-bold text-3xl">Financial reports</h2>
-        <DateRangePicker />
-      </div>
-      <p>{range.startDate && !error ? `${range.startDate} – ${range.endDate ?? range.startDate}` : 'All time'} (UTC)</p>
-      {error ? <p role="alert">{error} <Link href="/reports" className="underline">Clear dates</Link></p>
-        : count > 0 ? <Reports date={range} /> : <p>No data available for the selected period.</p>}
-    </div>
-  );
+  return <>
+    <PageHeading title="Reports" description={range.startDate && !error ? `${shortDate(range.startDate)} – ${shortDate(range.endDate ?? range.startDate)} · UTC` : 'All time · UTC'}>
+      <DateRangePicker />
+    </PageHeading>
+    {error ? <Alert variant="destructive"><AlertDescription>{error} <Link href="/reports" className="underline">Clear dates</Link></AlertDescription></Alert>
+      : count > 0 ? <Reports date={range} /> : <div className="rounded-xl border bg-card"><Empty><EmptyHeader><EmptyTitle>No activity in this period</EmptyTitle><EmptyDescription>Try another date range, or add a transaction to start building your reports.</EmptyDescription></EmptyHeader></Empty></div>}
+  </>;
 }

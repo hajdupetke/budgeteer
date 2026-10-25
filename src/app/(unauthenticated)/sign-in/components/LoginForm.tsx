@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { signIn } from '@/lib/auth';
 import { AuthError } from 'next-auth';
-import Image from 'next/image';
+import SignInButton from './SignInButton';
 
 const LoginForm = () => {
   const providerMap = [
@@ -10,7 +10,7 @@ const LoginForm = () => {
   ];
 
   return (
-    <>
+    <div className="flex flex-col gap-3">
       {Object.values(providerMap).map((provider) => (
         <form
           action={async () => {
@@ -28,23 +28,10 @@ const LoginForm = () => {
           }}
           key={provider.id}
         >
-          <button
-            type="submit"
-            className="border w-full px-24 py-2 hover:bg-zinc-50 rounded my-1"
-          >
-            <span className="flex justify-center gap-2">
-              <Image
-                src={`/static/images/sign-in-page/${provider.id}-logo.svg`}
-                width={24}
-                height={24}
-                alt={`${provider.name} logo`}
-              />
-              Sign in with {provider.name}
-            </span>
-          </button>
+          <SignInButton id={provider.id} name={provider.name} />
         </form>
       ))}
-    </>
+    </div>
   );
 };
 

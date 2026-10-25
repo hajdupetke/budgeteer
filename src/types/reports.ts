@@ -12,7 +12,9 @@ export type CategoryChartConfig = {
 };
 
 export type CategoryChartData = {
+  categoryId: number | null;
   category: string;
+  fill: string;
   sum: number;
   //fill: string;
 };
