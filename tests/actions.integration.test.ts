@@ -131,6 +131,16 @@ describe('ownership and visibility', () => {
     }
     await expect(actions.getExpenseVsIncome('day')).rejects.toThrow('Please sign in');
   });
+  it('keeps the demo account read-only even when server actions are called directly', async () => {
+    session.id = 'budgeteer-demo';
+    for (const result of [
+      await actions.createTransactionCategory(category()), await actions.updateTransactionCategory(category(), own), await actions.deleteTransactionCategory(own),
+      await actions.createTransaction(transaction()), await actions.updateTransaction(transaction(), transactionId), await actions.deleteTransaction(transactionId),
+      await actions.createBudget(budget()), await actions.updateBudget(budget(), budgetId), await actions.deleteBudget(budgetId),
+    ]) expect(result).toEqual({ success: false, message: 'The demo is read-only. Sign in with your own account to make changes.' });
+    expect(revalidatePath).not.toHaveBeenCalled();
+    expect((await db.transaction.findUnique({ where: { id: transactionId } }))?.userId).toBe(bob);
+  });
 });
 
 describe('mutation behavior', () => {

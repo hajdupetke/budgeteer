@@ -5,6 +5,8 @@ import { Toaster } from '@/components/ui/sonner';
 import { Nunito_Sans } from 'next/font/google';
 import SidebarNav from './_components/SidebarNav';
 import AnimatedSidebar from './_components/AnimatedSidebar';
+import { auth } from '@/lib/auth';
+import { isDemoUser } from '@/lib/demo';
 
 const nunitoSans = Nunito_Sans({ subsets: ['latin'] });
 
@@ -19,6 +21,8 @@ export default async function AuthenticatedLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
+  const demo = isDemoUser(session?.user?.id);
   return (
     <html lang="en" className={nunitoSans.className}>
       <body className="budgeteer-app min-h-dvh lg:flex">
@@ -27,7 +31,10 @@ export default async function AuthenticatedLayout({
           <SidebarNav />
         </AnimatedSidebar>
         <main id="main-content" className="min-w-0 flex-1 px-5 py-7 sm:px-8 lg:px-10 lg:py-10">
-          <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-8">{children}</div>
+          <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-8">
+            {demo && <p role="status" className="rounded-lg border bg-card px-4 py-3 text-sm text-muted-foreground"><strong className="text-foreground">Demo preview</strong> · Fictional data · Read-only. Sign out to use your own account.</p>}
+            {children}
+          </div>
         </main>
         <Toaster />
       </body>

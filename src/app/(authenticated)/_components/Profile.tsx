@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth';
 import Image from 'next/image';
 import { CircleUserRound } from 'lucide-react';
+import { isDemoUser } from '@/lib/demo';
 
 export default async function Profile() {
   const session = await auth();
@@ -10,7 +11,7 @@ export default async function Profile() {
         : <CircleUserRound className="size-9 shrink-0 text-muted-foreground" aria-hidden="true" />}
       <div className="min-w-0">
         <p className="truncate text-sm font-semibold" title={session?.user?.name ?? undefined}>{session?.user?.name ?? 'Your account'}</p>
-        <p className="text-xs text-muted-foreground">Personal workspace</p>
+        <p className="text-xs text-muted-foreground">{isDemoUser(session?.user?.id) ? 'Read-only preview' : 'Personal workspace'}</p>
       </div>
     </div>
   );

@@ -11,11 +11,12 @@ import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell, TableCap
 import EditTransaction from './EditTransaction';
 import DeleteTransaction from './DeleteTransaction';
 
-export default function TransactionList({ transactions, categories }: { transactions: TransactionWithCategory[]; categories: TransactionCategory[] }) {
+export default function TransactionList({ transactions, categories, readOnly = false }: { transactions: TransactionWithCategory[]; categories: TransactionCategory[]; readOnly?: boolean }) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selected, setSelected] = useState<TransactionWithCategory | null>(null);
   function actions(transaction: TransactionWithCategory) {
+    if (readOnly) return null;
     return <div className="flex justify-end gap-1">
       <Button variant="ghost" size="icon" aria-label={`Edit ${transaction.name}`} onClick={() => { setSelected(transaction); setEditOpen(true); }}><Pencil /></Button>
       <Button variant="ghost" size="icon" aria-label={`Delete ${transaction.name}`} onClick={() => { setSelected(transaction); setDeleteOpen(true); }}><Trash2 /></Button>
@@ -33,13 +34,13 @@ export default function TransactionList({ transactions, categories }: { transact
     <div className="hidden overflow-hidden rounded-xl border bg-card xl:block">
       <Table>
         <TableCaption className="sr-only">Transactions with amounts in EUR and dates in UTC</TableCaption>
-        <TableHeader><TableRow><TableHead>Transaction</TableHead><TableHead>Category</TableHead><TableHead>Date (UTC)</TableHead><TableHead className="text-right">Amount</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+        <TableHeader><TableRow><TableHead>Transaction</TableHead><TableHead>Category</TableHead><TableHead>Date (UTC)</TableHead><TableHead className="text-right">Amount</TableHead>{!readOnly && <TableHead className="text-right">Actions</TableHead>}</TableRow></TableHeader>
         <TableBody>{transactions.map((transaction) => <TableRow key={transaction.id}>
           <TableCell className="max-w-[260px]">{name(transaction)}</TableCell>
           <TableCell className="max-w-[180px]"><p className="truncate text-muted-foreground" title={transaction.category?.name ?? 'Uncategorized'}>{transaction.category?.icon && <span aria-hidden="true">{transaction.category.icon} </span>}{transaction.category?.name ?? 'Uncategorized'}</p></TableCell>
           <TableCell className="whitespace-nowrap text-muted-foreground"><time dateTime={transaction.timestamp.toISOString()}>{shortDate(transaction.timestamp)}</time></TableCell>
           <TableCell className="money whitespace-nowrap text-right font-bold">{transaction.type === 'INCOME' ? '+' : '−'}{formatMoney(transaction.amount)}</TableCell>
-          <TableCell>{actions(transaction)}</TableCell>
+          {!readOnly && <TableCell>{actions(transaction)}</TableCell>}
         </TableRow>)}</TableBody>
       </Table>
     </div>

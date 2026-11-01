@@ -10,6 +10,8 @@ import { PageHeading } from '@/components/PageHeading';
 import NewTransaction from '../transactions/_components/transaction/NewTransaction';
 import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { auth } from '@/lib/auth';
+import { isDemoUser } from '@/lib/demo';
 
 export const metadata: Metadata = { title: 'Overview' };
 
@@ -24,6 +26,7 @@ function Comparison({ current, previous, expense = false }: { current: number; p
 }
 
 export default async function Dashboard() {
+  const demo = isDemoUser((await auth())?.user?.id);
   const now = new Date();
   const range = monthRange(now);
   const previousRange = monthRange(now, -1);
@@ -38,7 +41,7 @@ export default async function Dashboard() {
   return (
     <>
       <PageHeading title="Overview" description={<>{monthLabel(range.startDate)} <span aria-hidden="true">·</span> Calendar month, UTC</>}>
-        <NewTransaction categories={categories} />
+        {!demo && <NewTransaction categories={categories} />}
       </PageHeading>
       <section aria-label="Monthly totals" className="grid overflow-hidden rounded-xl border bg-card md:grid-cols-3">
         <div className="flex flex-col gap-3 border-b px-6 py-6 md:border-r md:border-b-0">

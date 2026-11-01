@@ -3,6 +3,7 @@ import { buttonVariants } from '@/components/ui/button';
 import Image from 'next/image';
 import TopBar from './_components/TopBar';
 import Footer from './_components/Footer';
+import DemoSignIn from '../sign-in/components/DemoSignIn';
 
 export default function Home() {
   return (
@@ -17,14 +18,10 @@ export default function Home() {
           achieve your financial goals with our all-in-one finance tracker.
         </p>
 
-        <Link
-          href={'/sign-in'}
-          className={`
-            ${buttonVariants({ variant: 'default', size: 'xl' })} +
-             !rounded-full border`}
-        >
-          Sign up for free
-        </Link>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <Link href="/sign-in" className={buttonVariants({ variant: 'default', size: 'xl' })}>Sign up for free</Link>
+          {process.env.DEMO_ENABLED === 'true' && <DemoSignIn />}
+        </div>
       </div>
       <div className="w-full my-8 sm:my-16 flex justify-center">
         <Image
@@ -94,7 +91,6 @@ export default function Home() {
           src={'/static/images/landing-page/background-desktop.svg'}
           alt="background image"
           fill
-          quality={100}
           priority
           draggable="false"
           className="object-cover hidden lg:block"
@@ -103,7 +99,6 @@ export default function Home() {
           src={'/static/images/landing-page/background-tablet.svg'}
           alt="background image"
           fill
-          quality={100}
           priority
           draggable="false"
           className="object-cover hidden md:block lg:hidden"
@@ -112,7 +107,6 @@ export default function Home() {
           src={'/static/images/landing-page/background-tablet.svg'}
           alt="background image"
           fill
-          quality={100}
           draggable="false"
           className="object-cover block md:hidden"
         />

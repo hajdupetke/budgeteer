@@ -1,6 +1,5 @@
 'use server';
 
-import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { Prisma } from '@prisma/client';
 import { incomeExpense } from '@prisma/client/sql';
@@ -16,6 +15,7 @@ import {
   budgetInput,
 } from './validation';
 import { dateBounds, type DateRange } from './finance';
+import { isDemoUser } from './demo';
 
 type MutationResult = { success: true } | { success: false; message: string };
 type Pagination = { skip?: number; take?: number };
@@ -52,7 +52,9 @@ async function checkCategories(tx: Prisma.TransactionClient, id: string, ids: nu
 
 async function mutate(write: (id: string) => Promise<unknown>): Promise<MutationResult> {
   try {
-    await write(await userId());
+    const id = await userId();
+    if (isDemoUser(id)) throw new InputError('The demo is read-only. Sign in with your own account to make changes.');
+    await write(id);
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { success: false, message: error.issues[0].message };
@@ -74,8 +76,7 @@ async function mutate(write: (id: string) => Promise<unknown>): Promise<Mutation
 }
 
 export const logOut = async () => {
-  await signOut();
-  redirect('/');
+  await signOut({ redirectTo: '/' });
 };
 
 export const createTransactionCategory = async (data: FormData) => mutate(async (id) => {

@@ -13,8 +13,8 @@ import { Pencil, Trash2 } from 'lucide-react';
 
 type BudgetRow = BudgetWithCategory & BudgetSpending;
 
-export default function BudgetList({ budgets, categories, page, budgetCount, pageSize }: {
-  budgets: BudgetRow[]; categories: MultiSelectOption[]; page: number; budgetCount: number; pageSize: number;
+export default function BudgetList({ budgets, categories, page, budgetCount, pageSize, readOnly = false }: {
+  budgets: BudgetRow[]; categories: MultiSelectOption[]; page: number; budgetCount: number; pageSize: number; readOnly?: boolean;
 }) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -27,10 +27,10 @@ export default function BudgetList({ budgets, categories, page, budgetCount, pag
           <div className="min-w-0"><h2 className="truncate text-base font-bold" title={budget.name}>{budget.name}</h2>
             <p className="mt-1 line-clamp-2 text-xs text-muted-foreground" title={budget.categories.map((category) => category.name).join(', ')}>{budget.categories.map((category) => category.name).join(' · ') || 'No categories selected'}</p>
           </div>
-          <div className="flex shrink-0 gap-1">
+          {!readOnly && <div className="flex shrink-0 gap-1">
             <Button size="icon" variant="ghost" aria-label={`Edit ${budget.name}`} onClick={() => { setSelected(budget); setEditOpen(true); }}><Pencil /></Button>
             <Button size="icon" variant="ghost" aria-label={`Delete ${budget.name}`} onClick={() => { setSelected(budget); setDeleteOpen(true); }}><Trash2 /></Button>
-          </div>
+          </div>}
         </div>
         <div className="mt-auto"><BudgetProgress budget={budget} /></div>
       </article>)}

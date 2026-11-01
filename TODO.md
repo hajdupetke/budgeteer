@@ -23,12 +23,12 @@
 
 ## 3. Make setup and the demo dependable
 
-- [ ] **Complete the repository's pnpm migration.** Only `AGENTS.md` has been updated so far. Pin the package manager, generate and commit `pnpm-lock.yaml`, replace `package-lock.json`, and update README/build scripts. Install `tsx` locally instead of downloading it through `npx` during deployment.
-- [ ] **Establish working checks before upgrades.** Verify install, Prisma generation, lint, typecheck, and build from a clean checkout. Resolve the ESLint 9/legacy configuration and `next lint` compatibility; add explicit scripts for checks and database setup.
-- [ ] **Review dependency maintenance.** Check framework/authentication security advisories when implementing this task, apply supported fixes, and remove verified unused packages. Upgrade major versions only where needed; retest OAuth, forms, and charts afterward.
-- [ ] **Fix and separate seeding.** Await category upserts in `prisma/seed.ts` instead of using async `forEach`; ensure repeated runs succeed and generated category IDs cannot collide with seeded IDs. Separate demo seeding from ordinary production builds.
-- [ ] **Provide a recruiter-friendly demo.** Add fictional income, expenses, and budgets across recent months using relative dates. Offer an isolated demo session or read-only preview without requiring a personal OAuth login; keep demo data separate from real accounts.
-- [ ] **Verify one hosted deployment.** Test OAuth callback URLs, logout, refreshes, migrations, and image loading. Restrict remote profile image hosts to the providers actually used, correct the example authentication-secret placeholder, and document required environment variables.
+- [x] **Complete the repository's pnpm migration.** Pin the package manager, use `pnpm-lock.yaml`, replace `package-lock.json`, update README/build scripts, and install `tsx` locally.
+- [x] **Establish working checks before upgrades.** Verify a frozen install, Prisma generation, lint, typecheck, and build. Use an ESLint 9 flat config and explicit check/database scripts.
+- [x] **Review dependency maintenance.** Apply supported Next.js/Auth.js fixes, remove verified unused packages, and retest local authentication, forms, and charts. Hosted OAuth remains part of deployment verification; the remaining development-tool advisory is documented in README.
+- [x] **Fix and separate seeding.** Await default category creation, repair the category ID sequence, make both seeds repeatable, and keep demo seeding out of production builds.
+- [x] **Provide a recruiter-friendly demo.** Seed separate fictional records across recent months and provide a read-only session without personal OAuth login.
+- [ ] **Verify one hosted deployment.** Test OAuth callback URLs, logout, refreshes, migrations, and image loading on an actual host. Remote image hosts, the example authentication secret, and required environment variables are configured and documented locally.
 
 ## 4. Add focused evidence of quality
 

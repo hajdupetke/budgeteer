@@ -17,6 +17,8 @@ const getErrorMessage = (error: string): string => {
       return 'There was a problem sending the sign in email.';
     case 'CredentialsSignin':
       return 'The sign in credentials were incorrect.';
+    case 'DemoUnavailable':
+      return 'The demo preview is unavailable. Ask the site owner to refresh its data.';
     case 'SessionRequired':
       return 'You must be signed in to access this page.';
     default:

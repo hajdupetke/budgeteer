@@ -10,6 +10,11 @@ services:
       POSTGRES_DB: budgeteer
     volumes:
       - budgeteer-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d budgeteer"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     restart: unless-stopped
 volumes:
   budgeteer-data:

@@ -7,6 +7,7 @@ import NewBudget from './NewBudget';
 import { getCategories, getBudgets, getBudgetCount, getExpensesByCategory, getBudgetWithAmount } from '@/lib/actions';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
+import { isDemoUser } from '@/lib/demo';
 
 const BUDGETS_PER_PAGE = 8;
 
@@ -37,8 +38,8 @@ const Budgets = async ({ page }: { page: number }) => {
   }));
 
   return <>
-    <PageHeading title="Budgets" description={`${monthLabel(range.startDate)} · Monthly limits, UTC`}><NewBudget categories={categories} /></PageHeading>
-    <BudgetList budgets={budgets} categories={categories} page={page} budgetCount={budgetCount} pageSize={BUDGETS_PER_PAGE} />
+    <PageHeading title="Budgets" description={`${monthLabel(range.startDate)} · Monthly limits, UTC`}>{!isDemoUser(session.user.id) && <NewBudget categories={categories} />}</PageHeading>
+    <BudgetList budgets={budgets} categories={categories} page={page} budgetCount={budgetCount} pageSize={BUDGETS_PER_PAGE} readOnly={isDemoUser(session.user.id)} />
     <p className="page-description">Budgets sharing categories each count the same spending.</p>
   </>;
 };
