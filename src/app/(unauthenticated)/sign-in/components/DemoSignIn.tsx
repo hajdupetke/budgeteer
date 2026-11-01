@@ -3,7 +3,7 @@ import { AuthError } from 'next-auth';
 import { signIn } from '@/lib/auth';
 import DemoSignInButton from './DemoSignInButton';
 
-export default function DemoSignIn({ fullWidth = false }: { fullWidth?: boolean }) {
+export default function DemoSignIn({ fullWidth = false, variant = 'outline' }: { fullWidth?: boolean; variant?: 'default' | 'outline' }) {
   return <form action={async () => {
     'use server';
     try {
@@ -13,6 +13,6 @@ export default function DemoSignIn({ fullWidth = false }: { fullWidth?: boolean 
       throw error;
     }
   }}>
-    <DemoSignInButton fullWidth={fullWidth} />
+    <DemoSignInButton fullWidth={fullWidth} variant={variant} />
   </form>;
 }

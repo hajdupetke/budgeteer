@@ -33,7 +33,7 @@
 ## 4. Add focused evidence of quality
 
 - [ ] **Test the important regressions.** Add a small suite for server validation, percentage calculations, and date boundaries, plus database integration checks for cross-user access and budget category replacement. Use a dedicated test database; no arbitrary coverage target.
-- [ ] **Automate the basic checks.** Add a simple CI workflow using pinned pnpm, lint, typecheck, and the focused tests. Include a build only with the database/configuration needed for Prisma typed SQL generation.
+- [x] **Automate the basic checks.** CI uses pinned pnpm, lint, typecheck, unit and integration tests, and a build against a disposable PostgreSQL database.
 - [ ] **Run one complete acceptance pass.** Cover new-user onboarding, CRUD, category deletion, reports, pagination, empty data, failed submissions, and mobile keyboard navigation. Record results; automate one main browser flow if it adds useful confidence.
 - [ ] **Tidy touched code.** Remove debug logs and replace broad `any` types around query results, currency fields, and category selection. Extract duplicated report mapping/formatting where useful; keep refactoring proportional to the fixes.
 
