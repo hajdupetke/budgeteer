@@ -20,10 +20,10 @@ const EditBudget = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
-        <DialogTitle className="text-2xl font-bold">Edit a budget</DialogTitle>
+        <DialogTitle >Edit a budget</DialogTitle>
         <EditBudgetForm
           categories={categories}
-          budget={budget}
+          budget={{ ...budget, max: budget.max.toString() }}
           onSuccess={() => {
             setOpen(false);
             toast.success('Budget successfully edited!');

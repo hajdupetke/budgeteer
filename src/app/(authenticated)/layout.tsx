@@ -5,13 +5,15 @@ import { Toaster } from '@/components/ui/sonner';
 import { Nunito_Sans } from 'next/font/google';
 import SidebarNav from './_components/SidebarNav';
 import AnimatedSidebar from './_components/AnimatedSidebar';
+import { auth } from '@/lib/auth';
+import { isDemoUser } from '@/lib/demo';
 
 const nunitoSans = Nunito_Sans({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: { template: '%s - Budgeteer', default: 'Budgeteer' },
   description:
-    'Take control of your finances with Budgeteer, the all-in-one personal finance tracker. Manage your budget, track expenses, and be mindfull of your finances. Start for free today!',
+    'Take control of your finances with Budgeteer, the all-in-one personal finance tracker. Manage your budget, track expenses, and be mindful of your finances. Start for free today!',
 };
 
 export default async function AuthenticatedLayout({
@@ -19,15 +21,21 @@ export default async function AuthenticatedLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
+  const demo = isDemoUser(session?.user?.id);
   return (
-    <html lang="en" className={`text-gray-800 ${nunitoSans.className}`}>
-      <body className="flex items-center h-screen w-screen overflow-hidden bg-white">
+    <html lang="en" className={nunitoSans.className}>
+      <body className="budgeteer-app min-h-dvh lg:flex">
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-card focus:p-3">Skip to content</a>
         <AnimatedSidebar>
           <SidebarNav />
         </AnimatedSidebar>
-        <div className="flex h-full w-full gap-2 md:gap-4 flex-wrap overflow-auto p-4 flex-col">
-          {children}
-        </div>
+        <main id="main-content" className="min-w-0 flex-1 px-5 py-7 sm:px-8 lg:px-10 lg:py-10">
+          <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-8">
+            {demo && <p role="status" className="rounded-lg border bg-card px-4 py-3 text-sm text-muted-foreground"><strong className="text-foreground">Demo preview</strong> · Fictional data · Read-only. Sign out to use your own account.</p>}
+            {children}
+          </div>
+        </main>
         <Toaster />
       </body>
     </html>

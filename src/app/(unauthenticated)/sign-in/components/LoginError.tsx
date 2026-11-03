@@ -1,3 +1,4 @@
+import { Alert, AlertDescription } from '@/components/ui/alert';
 const getErrorMessage = (error: string): string => {
   switch (error) {
     case 'OAuthSignin':
@@ -16,6 +17,8 @@ const getErrorMessage = (error: string): string => {
       return 'There was a problem sending the sign in email.';
     case 'CredentialsSignin':
       return 'The sign in credentials were incorrect.';
+    case 'DemoUnavailable':
+      return 'The demo preview is unavailable. Ask the site owner to refresh its data.';
     case 'SessionRequired':
       return 'You must be signed in to access this page.';
     default:
@@ -24,9 +27,9 @@ const getErrorMessage = (error: string): string => {
 };
 const LoginError = ({ errorType }: { errorType: string }) => {
   return (
-    <p className="w-full border p-4 mt-2 border-red-800 bg-red-200 text-wrap">
+    <Alert variant="destructive" className="mt-3"><AlertDescription>
       {getErrorMessage(errorType)}
-    </p>
+    </AlertDescription></Alert>
   );
 };
 

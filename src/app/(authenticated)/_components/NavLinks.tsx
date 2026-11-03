@@ -2,72 +2,35 @@
 
 import Link from 'next/link';
 import { logOut } from '@/lib/actions';
-import {
-  LayoutDashboard,
-  History,
-  Calendar,
-  LogOut,
-  CircleDollarSign,
-} from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, ChartNoAxesCombined, LogOut, Wallet } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 const links = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Transactions', href: '/transactions', icon: History },
-  { name: 'Reports', href: '/reports', icon: Calendar },
-  { name: 'Budgets', href: '/budgets', icon: CircleDollarSign },
+  { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Transactions', href: '/transactions', icon: ArrowLeftRight },
+  { name: 'Budgets', href: '/budgets', icon: Wallet },
+  { name: 'Reports', href: '/reports', icon: ChartNoAxesCombined },
 ];
 
-const NavLinks = () => {
-  const pathname = '/' + usePathname().split('/')[1];
-
+export default function NavLinks() {
+  const pathname = usePathname();
   return (
-    <div className="flex flex-col gap-6">
-      {links.map((link) => {
-        const Icon = link.icon;
-        return (
-          <div className="group" key={link.name}>
-            <Link
-              href={link.href}
-              className={cn(
-                'flex gap-4 items-center w-full px-2 font-bold border-l-2 border-transparent group-hover:text-primary-600 transition-colors',
-                {
-                  'text-primary-600 border-primary-600!':
-                    pathname === link.href,
-                }
-              )}
-            >
-              <Icon
-                width={30}
-                height={30}
-                className={cn(
-                  'stroke-gray-500 group-hover:stroke-primary-600',
-                  { 'stroke-primary-600!': pathname === link.href }
-                )}
-              />{' '}
-              {link.name}
-            </Link>
-          </div>
-        );
-      })}
-      <form action={logOut}>
-        <button
-          type="submit"
-          className="flex gap-4 items-center px-2 w-full font-bold group"
-        >
-          <LogOut
-            width={30}
-            height={30}
-            className="stroke-gray-500 group-hover:stroke-primary-600 border-l-2 border-transparent"
-          />{' '}
-          <span className="group-hover:text-primary-600 transition-colors ">
-            Sign out
-          </span>
-        </button>
+    <>
+      <nav aria-label="Workspace" className="flex flex-col gap-1.5">
+        {links.map(({ name, href, icon: Icon }) => {
+          const active = pathname.startsWith(href);
+          return <Link key={href} href={href} aria-current={active ? 'page' : undefined}
+            className={cn('flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold transition-colors focus-visible:outline-ring',
+              active ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground')}>
+            <Icon className="size-[18px]" aria-hidden="true" />{name}
+          </Link>;
+        })}
+      </nav>
+      <form action={logOut} className="mt-auto pt-6">
+        <Button type="submit" variant="ghost" className="w-full justify-start"><LogOut data-icon="inline-start" />Sign out</Button>
       </form>
-    </div>
+    </>
   );
-};
-
-export default NavLinks;
+}

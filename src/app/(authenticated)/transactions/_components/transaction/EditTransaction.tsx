@@ -18,12 +18,12 @@ const EditTransaction = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
-        <DialogTitle className="text-2xl font-bold">
+        <DialogTitle >
           Edit a transaction
         </DialogTitle>
         <EditTransactionForm
           categories={categories}
-          transaction={transaction}
+          transaction={{ ...transaction, amount: transaction.amount.toString() }}
           onSuccess={() => {
             setOpen(false);
             toast.success('Transaction successfully edited!');

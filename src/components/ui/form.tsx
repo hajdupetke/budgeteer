@@ -14,7 +14,7 @@ import {
 } from "react-hook-form"
 
 import { cn } from "@/lib/utils"
-import { Label } from "@/components/ui/label"
+import { Field, FieldLabel } from "@/components/ui/field"
 
 const Form = FormProvider
 
@@ -75,10 +75,14 @@ const FormItemContext = React.createContext<FormItemContextValue>(
 
 function FormItem({ className, ...props }: React.ComponentProps<"div">) {
   const id = React.useId()
+  const { name } = React.useContext(FormFieldContext)
+  const { getFieldState, formState } = useFormContext()
+  const { error } = getFieldState(name, formState)
 
   return (
     <FormItemContext.Provider value={{ id }}>
-      <div
+      <Field
+        data-invalid={!!error}
         data-slot="form-item"
         className={cn("grid gap-2", className)}
         {...props}
@@ -94,10 +98,10 @@ function FormLabel({
   const { error, formItemId } = useFormField()
 
   return (
-    <Label
+    <FieldLabel
       data-slot="form-label"
       data-error={!!error}
-      className={cn("data-[error=true]:text-red-500 dark:data-[error=true]:text-red-900", className)}
+      className={cn("data-[error=true]:text-destructive", className)}
       htmlFor={formItemId}
       {...props}
     />
@@ -129,7 +133,7 @@ function FormDescription({ className, ...props }: React.ComponentProps<"p">) {
     <p
       data-slot="form-description"
       id={formDescriptionId}
-      className={cn("text-zinc-500 text-sm dark:text-zinc-400", className)}
+      className={cn("text-muted-foreground text-sm", className)}
       {...props}
     />
   )
@@ -147,7 +151,7 @@ function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
     <p
       data-slot="form-message"
       id={formMessageId}
-      className={cn("text-red-500 text-sm dark:text-red-900", className)}
+      className={cn("text-destructive text-sm", className)}
       {...props}
     >
       {body}

@@ -1,66 +1,23 @@
 import { ExpensesByCategory } from '@/components/ui/charts/ExpensesByCategory';
-import {
-  getCategories,
-  getExpensesByCategory,
-  getExpenseVsIncome,
-  getBudgetWithAmount,
-} from '@/lib/actions';
+import { getCategories, getExpensesByCategory, getExpenseVsIncome, getBudgetWithAmount } from '@/lib/actions';
 import { BudgetCharts } from '@/components/ui/charts/BudgetCharts';
 import { IncomeExpenseChart } from '@/components/ui/charts/IncomeExpenseChart';
+import { type DateRange } from '@/lib/finance';
+import { categoryChartData } from '@/lib/report-presentation';
 
-export const Reports = async ({
-  date,
-}: {
-  date: {
-    startDate: string;
-    endDate: string;
-  };
-}) => {
-  const { startDate, endDate } = await date;
-
-  const categories = await getCategories({
-    select: {
-      id: true,
-      name: true,
-    },
-  });
-
-  const expensesByCategory = await getExpensesByCategory(startDate, endDate);
-
-  const categoryExpenseChartData = expensesByCategory.map(
-    (categoryExpense, index) => {
-      const chartData = {
-        category:
-          categories[
-            categories.findIndex((c) => c.id == categoryExpense.categoryId)
-          ].name,
-        sum: categoryExpense._sum.amount
-          ? categoryExpense._sum.amount.toNumber()
-          : 0,
-        fill: `var(--chart-color-${index + 1})`,
-      };
-
-      return chartData;
-    }
-  );
-
-  const budgetWithAmount = await getBudgetWithAmount(expensesByCategory);
-
-  const incomeExpenseResponse = await getExpenseVsIncome(
-    'week',
-    startDate,
-    endDate
-  );
-
-  return (
-    <div className="flex gap-3 h-full w-full flex-col items-center">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
-        <ExpensesByCategory chartData={categoryExpenseChartData} />
-        <BudgetCharts chartData={budgetWithAmount} />
-      </div>
-      <div className="w-full xl:w-2/5">
-        <IncomeExpenseChart chartData={incomeExpenseResponse} />
-      </div>
+export const Reports = async ({ date }: { date: DateRange }) => {
+  const [categories, expenses, incomeExpense] = await Promise.all([
+    getCategories(), getExpensesByCategory(date), getExpenseVsIncome('week', date),
+  ]);
+  const budgets = await getBudgetWithAmount(expenses);
+  return <>
+    <div className="grid min-w-0 gap-6 xl:grid-cols-[1.3fr_1fr]">
+      <IncomeExpenseChart chartData={incomeExpense} />
+      <ExpensesByCategory chartData={categoryChartData(categories, expenses)} />
     </div>
-  );
+    <section className="flex flex-col gap-4" aria-labelledby="report-budgets">
+      <div><h2 id="report-budgets" className="text-lg font-bold">Budget breakdown</h2><p className="page-description mt-1">Selected-period spending against monthly limits. Limits are not prorated; budgets sharing categories each count the same spending.</p></div>
+      <BudgetCharts chartData={budgets} />
+    </section>
+  </>;
 };

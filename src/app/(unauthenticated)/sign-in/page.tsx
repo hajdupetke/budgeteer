@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import LoginForm from './components/LoginForm';
 import LoginError from './components/LoginError';
+import DemoSignIn from './components/DemoSignIn';
 
 export default async function SignInPage(
   props: {
@@ -11,17 +12,18 @@ export default async function SignInPage(
   const searchParams = await props.searchParams;
   return (
     <>
-      <div className="h-screen w-screen flex justify-center items-center">
-        <div className="bg-white px-8 py-8 shadow-2xl rounded-xl border">
+      <div className="min-h-dvh flex justify-center items-center p-5">
+        <div className="w-full max-w-sm bg-white p-6 shadow-xl rounded-xl border">
           <Image
             src={'/static/images/logo.png'}
             width={176}
             height={45}
             alt="logo"
             draggable="false"
-            className="my-8 "
+            className="mb-8"
           />
           <LoginForm />
+          {process.env.DEMO_ENABLED === 'true' && <div className="mt-4 border-t pt-4"><DemoSignIn fullWidth /><p className="mt-2 text-center text-xs text-muted-foreground">Explore fictional finances without an account.</p></div>}
           {searchParams?.error && <LoginError errorType={searchParams.error} />}
         </div>
       </div>
@@ -31,7 +33,6 @@ export default async function SignInPage(
           src={'/static/images/sign-in-page/sign-in-background.svg'}
           alt="background image"
           fill
-          quality={100}
           priority
           draggable="false"
           className="object-cover"

@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { createTransaction } from '@/lib/actions';
 import { TransactionSchema } from '@/lib/validation';
 import { z } from 'zod';
+import { FieldGroup } from '@/components/ui/field';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -22,6 +24,7 @@ import {
   SelectContent,
   SelectValue,
   SelectItem,
+  SelectGroup,
   SelectTrigger,
 } from '@/components/ui/select';
 import { DateTimePicker } from '@/components/ui/datetime/datetime-picker';
@@ -45,8 +48,8 @@ export default function CreateTransactionForm({
     defaultValues: {
       id: 0,
       name: '',
-      amount: 0,
-      categoryId: 0,
+      amount: '',
+      categoryId: null,
       timestamp: date,
       type: 'INCOME',
     },
@@ -54,19 +57,22 @@ export default function CreateTransactionForm({
 
   // Call server action when submitting form
   const onFormSubmit = async (values: TransactionFormData) => {
+    setIsSubmitting(true);
+    form.clearErrors();
     try {
       const formData = new FormData();
       formData.append('name', values.name);
       formData.append('amount', values.amount.toString());
-      formData.append('categoryId', (values.categoryId as number).toString());
+      formData.append('categoryId', values.categoryId?.toString() ?? '');
       formData.append('transactionType', values.type);
       if (values.timestamp)
-        formData.append('timestamp', new Date(values.timestamp).toString());
+        formData.append('timestamp', values.timestamp.toISOString());
       const res = await createTransaction(formData);
       // if response is good run onSuccess function
-      if (res.success && onSuccess) onSuccess();
-    } catch (err) {
-      console.log(err);
+      if (res.success) onSuccess?.();
+      else form.setError('root', { message: res.message });
+    } catch {
+      form.setError('root', { message: 'Could not save your changes. Try again.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -74,19 +80,18 @@ export default function CreateTransactionForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onFormSubmit)}>
+      <form onSubmit={form.handleSubmit(onFormSubmit)}><FieldGroup>
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
-            <FormItem className="my-4">
-              <FormLabel className="text-md text-gray-800 font-semibold my-1">
-                Transaction Name
+            <FormItem>
+              <FormLabel>
+                Name
               </FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Enter the name of the transaction"
-                  className="placeholder:text-slate-400 bg-white h-12 text-sm"
+                  placeholder="e.g. Weekly groceries"
                   {...field}
                 />
               </FormControl>
@@ -98,19 +103,21 @@ export default function CreateTransactionForm({
           control={form.control}
           name="type"
           render={({ field }) => (
-            <FormItem className="my-4">
-              <FormLabel className="text-md text-gray-800 font-semibold my-1">
-                Transaction Type
+            <FormItem>
+              <FormLabel>
+                Type
               </FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
-                  <SelectTrigger className="w-full placeholder:text-slate-400 bg-white !h-12 text-sm">
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select transaction type" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="INCOME">Income</SelectItem>
-                  <SelectItem value="EXPENSE">Expense</SelectItem>
+                  <SelectGroup>
+                    <SelectItem value="INCOME">Income</SelectItem>
+                    <SelectItem value="EXPENSE">Expense</SelectItem>
+                  </SelectGroup>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -121,8 +128,8 @@ export default function CreateTransactionForm({
           control={form.control}
           name="amount"
           render={({ field }) => (
-            <FormItem className="my-4">
-              <FormLabel className="text-md text-gray-800 font-semibold my-1">
+            <FormItem>
+              <FormLabel>
                 Amount
               </FormLabel>
               <FormControl>
@@ -140,31 +147,33 @@ export default function CreateTransactionForm({
           control={form.control}
           name="categoryId"
           render={({ field }) => (
-            <FormItem className="my-4">
-              <FormLabel className="text-md text-gray-800 font-semibold my-1">
+            <FormItem>
+              <FormLabel>
                 Category
               </FormLabel>
               <Select
-                onValueChange={(value) => field.onChange(parseInt(value, 10))}
-                defaultValue={field.value ? field.value.toString() : undefined}
-                value={field.value ? field.value.toString() : undefined}
+                onValueChange={(value) => field.onChange(value === 'uncategorized' ? null : Number(value))}
+                value={field.value?.toString() ?? 'uncategorized'}
               >
                 <FormControl>
-                  <SelectTrigger className="w-full placeholder:text-slate-400 bg-white !h-12 text-sm">
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {categories.map((category) => {
-                    return (
-                      <SelectItem
-                        value={category.id.toString()}
-                        key={category.id}
-                      >
-                        {category.name}
-                      </SelectItem>
-                    );
-                  })}
+                  <SelectGroup>
+                    <SelectItem value="uncategorized">Uncategorized</SelectItem>
+                    {categories.map((category) => {
+                      return (
+                        <SelectItem
+                          value={category.id.toString()}
+                          key={category.id}
+                        >
+                          {category.name}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectGroup>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -176,9 +185,9 @@ export default function CreateTransactionForm({
           control={form.control}
           name="timestamp"
           render={({ field }) => (
-            <FormItem className="my-4">
-              <FormLabel className="text-md text-gray-800 font-semibold my-1">
-                Timestamp
+            <FormItem>
+              <FormLabel>
+                Date and time
               </FormLabel>
               <FormControl>
                 <DateTimePicker
@@ -196,14 +205,15 @@ export default function CreateTransactionForm({
           )}
         />
 
+        {form.formState.errors.root && <Alert variant="destructive"><AlertDescription>{form.formState.errors.root.message}</AlertDescription></Alert>}
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded text-lg py-6 bg-primary-600 hover:bg-primary-700 box-shadow-md shadow-gray-600"
+          className="w-full"
         >
-          {isSubmitting ? 'Saving...' : 'Create Transaction'}
+          {isSubmitting ? 'Saving...' : 'Add transaction'}
         </Button>
-      </form>
+      </FieldGroup></form>
     </Form>
   );
 }
