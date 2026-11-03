@@ -6,6 +6,7 @@ import google from 'next-auth/providers/google';
 import Credentials from 'next-auth/providers/credentials';
 import authConfig from './auth.config';
 import { DEMO_USER_ID, isDemoUser } from './demo';
+import { configuredOAuthProviders } from './oauth-provider-config';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
@@ -27,14 +28,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
   },
-  providers: [github, google, Credentials({
-    id: 'demo',
-    name: 'Demo preview',
-    credentials: {},
-    async authorize() {
-      if (process.env.DEMO_ENABLED !== 'true') return null;
-      const user = await db.user.findUnique({ where: { id: DEMO_USER_ID } });
-      return user ? { id: user.id, name: user.name, email: user.email, image: null } : null;
-    },
-  })],
+  providers: [
+    ...(configuredOAuthProviders.github ? [github] : []),
+    ...(configuredOAuthProviders.google ? [google] : []),
+    Credentials({
+      id: 'demo',
+      name: 'Demo preview',
+      credentials: {},
+      async authorize() {
+        if (process.env.DEMO_ENABLED !== 'true') return null;
+        const user = await db.user.findUnique({ where: { id: DEMO_USER_ID } });
+        return user ? { id: user.id, name: user.name, email: user.email, image: null } : null;
+      },
+    }),
+  ],
 });

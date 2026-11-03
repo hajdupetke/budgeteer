@@ -2,11 +2,12 @@ import { redirect } from 'next/navigation';
 import { signIn } from '@/lib/auth';
 import { AuthError } from 'next-auth';
 import SignInButton from './SignInButton';
+import { configuredOAuthProviders } from '@/lib/oauth-provider-config';
 
 const LoginForm = () => {
   const providerMap = [
-    { id: 'github', name: 'GitHub' },
-    { id: 'google', name: 'Google' },
+    ...(configuredOAuthProviders.github ? [{ id: 'github', name: 'GitHub' }] : []),
+    ...(configuredOAuthProviders.google ? [{ id: 'google', name: 'Google' }] : []),
   ];
 
   return (
